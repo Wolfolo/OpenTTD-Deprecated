@@ -2475,6 +2475,11 @@ STR_LANDSCAPING_TOOLTIP_LOWER_A_CORNER_OF_LAND                  :{BLACK}Lower a 
 STR_LANDSCAPING_TOOLTIP_RAISE_A_CORNER_OF_LAND                  :{BLACK}Raise a corner of land. Dragging raises the first selected corner and levels the selected area to the new corner height. Ctrl selects the area diagonally. Shift toggles building/showing cost estimate
 STR_LANDSCAPING_LEVEL_LAND_TOOLTIP                              :{BLACK}Level an area of land to the height of the first selected corner. Ctrl selects the area diagonally. Shift toggles building/showing cost estimate
 STR_LANDSCAPING_TOOLTIP_PURCHASE_LAND                           :{BLACK}Purchase land for future use. Shift toggles building/showing cost estimate
+STR_LANDSCAPING_TOOLTIP_DRAW_LEVEL_LAND                         :{BLACK}Level land while moving the cursor around. Dragging levels all the selected area to the height level of the starting tile. Shift toggles building/showing cost estimate
+STR_LANDSCAPING_TOOLTIP_DRAW_LOWER_LAND                         :{BLACK}Lower land while moving the cursor around. Dragging lowers all the selected area by one level at time. Shift toggles building/showing cost estimate
+STR_LANDSCAPING_TOOLTIP_DRAW_RAISE_LAND                         :{BLACK}Raise land while moving the cursor around. Dragging raises all the selected area by one level at time. Shift toggles building/showing cost estimate
+STR_LANDSCAPING_TOOLTIP_FILL_LAND                               :{BLACK}Fill land up to a defined height. Levels all the land in the area below the height level of the start tile. Ctrl selects the area diagonally Shift toggles building/showing cost estimate
+STR_LANDSCAPING_TOOLTIP_TRIM_LAND                               :{BLACK}Trim land down to a defined height. Levels all the land in the area above the height level of the start tile. Ctrl selects the area diagonally. Shift toggles building/showing cost estimate
 
 # Object construction window
 STR_OBJECT_BUILD_CAPTION                                        :{WHITE}Object Selection

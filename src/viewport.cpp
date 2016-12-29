@@ -2531,6 +2531,28 @@ static void VpStartPreSizing()
 	_special_mouse_mode = WSM_PRESIZE;
 }
 
+/** start drawing */
+void VpStartDrawing(TileIndex tile, ViewportPlaceMethod method, ViewportDragDropSelectionProcess process)
+{
+	_thd.select_method = method;
+	_thd.select_proc = process;
+	_thd.selend.x = TileX(tile) * TILE_SIZE;
+	_thd.selend.y = TileY(tile) * TILE_SIZE;
+	_thd.selstart.x = TileX(tile) * TILE_SIZE;
+	_thd.selstart.y = TileY(tile) * TILE_SIZE;
+	_thd.place_mode = HT_SPECIAL;
+	_thd.next_drawstyle = HT_POINT;
+	_special_mouse_mode = WSM_SIZING;
+}
+
+void VpHandleDrawing(TileIndex from, TileIndex to)
+{
+	_thd.selend.x = TileX(to) * TILE_SIZE;
+	_thd.selend.y = TileY(to) * TILE_SIZE;
+	_thd.selstart.x = TileX(from) * TILE_SIZE;
+	_thd.selstart.y = TileY(from) * TILE_SIZE;
+}
+
 /**
  * returns information about the 2x1 piece to be build.
  * The lower bits (0-3) are the track type.

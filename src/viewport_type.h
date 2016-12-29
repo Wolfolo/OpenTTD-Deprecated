@@ -99,6 +99,11 @@ enum ViewportDragDropSelectionProcess {
 	DDSP_RAISE_AND_LEVEL_AREA, ///< Raise / level area
 	DDSP_LOWER_AND_LEVEL_AREA, ///< Lower / level area
 	DDSP_LEVEL_AREA,           ///< Level area
+	DDSP_TRIM_AREA,            ///< Level all the tiles higher than the start tile in the area
+	DDSP_FILL_AREA,            ///< Level all the tiles lower than the start tile in the area
+	DDSP_DRAW_RAISE_AREA,      ///< Raise area by drawing with mouse
+	DDSP_DRAW_LOWER_AREA,      ///< Lower area by drawing with mouse
+	DDSP_DRAW_LEVEL_AREA,      ///< Level area by drawing with mouse
 	DDSP_CREATE_DESERT,        ///< Fill area with desert
 	DDSP_CREATE_ROCKS,         ///< Fill area with rocks
 	DDSP_CREATE_WATER,         ///< Create a canal

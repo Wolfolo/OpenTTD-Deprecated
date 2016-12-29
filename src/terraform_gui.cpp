@@ -40,6 +40,9 @@
 
 #include "safeguards.h"
 
+static byte _terraform_size = 1;
+static uint _start_tile_height = 0;
+
 void CcTerraform(const CommandCost &result, TileIndex tile, uint32 p1, uint32 p2)
 {
 	if (result.Succeeded()) {
@@ -50,6 +53,29 @@ void CcTerraform(const CommandCost &result, TileIndex tile, uint32 p1, uint32 p2
 	}
 }
 
+void GUIPlaceProcFillOrTrimArea(ViewportDragDropSelectionProcess proc, TileIndex end_tile, TileIndex start_tile, uint8 mode)
+{
+	if (_settings_client.sound.confirm) SndPlayTileFx(SND_1F_SPLAT_OTHER, end_tile);
+
+	TileIterator *iter = HasBit(mode, 0) ? (TileIterator *)new DiagonalTileIterator(start_tile, end_tile) : new OrthogonalTileIterator(start_tile, end_tile);
+	for (; *iter != INVALID_TILE; ++(*iter)) {
+		TileIndex t = *iter;
+		uint curh = TileHeight(t);
+		uint m = -1;
+
+		if (proc == DDSP_TRIM_AREA) {
+			if (TileHeight(start_tile) < curh) m = 0;
+		}
+
+		if (proc == DDSP_FILL_AREA) {
+			if (TileHeight(start_tile) > curh) m = 1;
+		}
+
+		if (m != -1) {
+			DoCommandP(t, SLOPE_N, m, CMD_TERRAFORM_LAND);
+		}
+	}
+}
 
 /** Scenario editor command that generates desert areas */
 static void GenerateDesertArea(TileIndex end, TileIndex start)
@@ -125,6 +151,12 @@ bool GUIPlaceProcDragXY(ViewportDragDropSelectionProcess proc, TileIndex start_t
 		case DDSP_LEVEL_AREA:
 			DoCommandP(end_tile, start_tile, LM_LEVEL << 1 | (_ctrl_pressed ? 1 : 0), CMD_LEVEL_LAND | CMD_MSG(STR_ERROR_CAN_T_LEVEL_LAND_HERE), CcTerraform);
 			break;
+		case DDSP_TRIM_AREA:
+			GUIPlaceProcFillOrTrimArea(proc, end_tile, start_tile, LM_LOWER << 1 | (_ctrl_pressed ? 1 : 0));
+			break;
+		case DDSP_FILL_AREA:
+			GUIPlaceProcFillOrTrimArea(proc, end_tile, start_tile, LM_RAISE << 1 | (_ctrl_pressed ? 1 : 0));
+			break;
 		case DDSP_CREATE_ROCKS:
 			GenerateRockyArea(end_tile, start_tile);
 			break;
@@ -133,6 +165,37 @@ bool GUIPlaceProcDragXY(ViewportDragDropSelectionProcess proc, TileIndex start_t
 			break;
 		default:
 			return false;
+	}
+
+	return true;
+}
+
+bool GUIPlaceProcDraw(ViewportDragDropSelectionProcess proc, TileIndex cur_tile)
+{
+	TileArea ta(cur_tile, _terraform_size, _terraform_size);
+	ta.ClampToMap();
+
+	switch (proc)
+	{
+		case DDSP_DRAW_RAISE_AREA:
+			TILE_AREA_LOOP(tile2, ta) {
+				DoCommandP(tile2, SLOPE_N, 1, CMD_TERRAFORM_LAND);
+			}
+			break;
+		case DDSP_DRAW_LOWER_AREA:
+			TILE_AREA_LOOP(tile2, ta) {
+				DoCommandP(tile2, SLOPE_N, 0, CMD_TERRAFORM_LAND);
+			}
+			break;
+		case DDSP_DRAW_LEVEL_AREA:
+			TILE_AREA_LOOP(tile2, ta) {
+				if (TileHeight(tile2) != _start_tile_height) {
+					DoCommandP(tile2, SLOPE_N, TileHeight(tile2) > _start_tile_height ? 0 : 1, CMD_TERRAFORM_LAND);
+				}
+			}
+			break;
+		default:
+			break;
 	}
 
 	return true;
@@ -377,8 +440,6 @@ Window *ShowTerraformToolbar(Window *link)
 	return w;
 }
 
-static byte _terraform_size = 1;
-
 /**
  * Raise/Lower a bigger chunk of land at the same time in the editor. When
  * raising get the lowest point, when lowering the highest point, and set all
@@ -466,6 +527,20 @@ static const NWidgetPart _nested_scen_edit_land_gen_widgets[] = {
 										SetFill(0, 1), SetDataTip(SPR_IMG_TRANSMITTER, STR_SCENEDIT_TOOLBAR_PLACE_OBJECT),
 			NWidget(NWID_SPACER), SetFill(1, 0),
 		EndContainer(),
+		NWidget(NWID_HORIZONTAL), SetPadding(2, 2, 7, 2),
+			NWidget(NWID_SPACER), SetFill(1, 0),
+			NWidget(WWT_IMGBTN, COLOUR_GREY, WID_ETT_PAINT_LOWER_LAND), SetMinimalSize(22, 22),
+										SetFill(0, 1), SetDataTip(SPR_IMG_TERRAFORM_DOWN, STR_LANDSCAPING_TOOLTIP_DRAW_LOWER_LAND),
+			NWidget(WWT_IMGBTN, COLOUR_GREY, WID_ETT_PAINT_RAISE_LAND), SetMinimalSize(22, 22),
+										SetFill(0, 1), SetDataTip(SPR_IMG_TERRAFORM_UP, STR_LANDSCAPING_TOOLTIP_DRAW_RAISE_LAND),
+			NWidget(WWT_IMGBTN, COLOUR_GREY, WID_ETT_PAINT_LEVEL_LAND), SetMinimalSize(22, 22),
+										SetFill(0, 1), SetDataTip(SPR_IMG_LEVEL_LAND, STR_LANDSCAPING_TOOLTIP_DRAW_LEVEL_LAND),
+			NWidget(WWT_IMGBTN, COLOUR_GREY, WID_ETT_TRIM_LAND), SetMinimalSize(22, 22),
+										SetFill(0, 1), SetDataTip(SPR_IMG_TERRAFORM_DOWN, STR_LANDSCAPING_TOOLTIP_TRIM_LAND),
+			NWidget(WWT_IMGBTN, COLOUR_GREY, WID_ETT_FILL_LAND), SetMinimalSize(22, 22),
+										SetFill(0, 1), SetDataTip(SPR_IMG_TERRAFORM_UP, STR_LANDSCAPING_TOOLTIP_FILL_LAND),
+			NWidget(NWID_SPACER), SetFill(1, 0),
+		EndContainer(),
 		NWidget(NWID_HORIZONTAL),
 			NWidget(NWID_SPACER), SetFill(1, 0),
 			NWidget(WWT_EMPTY, COLOUR_DARK_GREEN, WID_ETT_DOTS), SetMinimalSize(59, 31), SetDataTip(STR_EMPTY, STR_NULL),
@@ -540,7 +615,11 @@ struct ScenarioEditorLandscapeGenerationWindow : Window {
 	{
 		this->DrawWidgets();
 
-		if (this->IsWidgetLowered(WID_ETT_LOWER_LAND) || this->IsWidgetLowered(WID_ETT_RAISE_LAND)) { // change area-size if raise/lower corner is selected
+		if (this->IsWidgetLowered(WID_ETT_LOWER_LAND)
+			|| this->IsWidgetLowered(WID_ETT_RAISE_LAND)
+			|| this->IsWidgetLowered(WID_ETT_PAINT_LEVEL_LAND)
+			|| this->IsWidgetLowered(WID_ETT_PAINT_RAISE_LAND)
+			|| this->IsWidgetLowered(WID_ETT_PAINT_LOWER_LAND)) { // change area-size if raise/lower corner is selected
 			SetTileSelectSize(_terraform_size, _terraform_size);
 		}
 	}
@@ -592,6 +671,31 @@ struct ScenarioEditorLandscapeGenerationWindow : Window {
 
 			case WID_ETT_LEVEL_LAND: // Level land button
 				HandlePlacePushButton(this, WID_ETT_LEVEL_LAND, SPR_CURSOR_LEVEL_LAND, HT_POINT | HT_DIAGONAL);
+				this->last_user_action = widget;
+				break;
+
+			case WID_ETT_TRIM_LAND: // Trim land button
+				HandlePlacePushButton(this, WID_ETT_TRIM_LAND, SPR_CURSOR_LEVEL_LAND, HT_POINT | HT_DIAGONAL);
+				this->last_user_action = widget;
+				break;
+
+			case WID_ETT_FILL_LAND: // Fill land button
+				HandlePlacePushButton(this, WID_ETT_FILL_LAND, SPR_CURSOR_LEVEL_LAND, HT_POINT | HT_DIAGONAL);
+				this->last_user_action = widget;
+				break;
+
+			case WID_ETT_PAINT_LOWER_LAND: // Lower land paintbrush button
+				HandlePlacePushButton(this, WID_ETT_PAINT_LOWER_LAND, ANIMCURSOR_LOWERLAND, HT_POINT);
+				this->last_user_action = widget;
+				break;
+
+			case WID_ETT_PAINT_RAISE_LAND: // Raise land paintbrush button
+				HandlePlacePushButton(this, WID_ETT_PAINT_RAISE_LAND, ANIMCURSOR_RAISELAND, HT_POINT);
+				this->last_user_action = widget;
+				break;
+
+			case WID_ETT_PAINT_LEVEL_LAND: // Level land paintbrush button
+				HandlePlacePushButton(this, WID_ETT_PAINT_LEVEL_LAND, SPR_CURSOR_LEVEL_LAND, HT_POINT);
 				this->last_user_action = widget;
 				break;
 
@@ -670,6 +774,27 @@ struct ScenarioEditorLandscapeGenerationWindow : Window {
 				VpStartPlaceSizing(tile, VPM_X_AND_Y, DDSP_CREATE_ROCKS);
 				break;
 
+			case WID_ETT_TRIM_LAND: // Level land button
+				VpStartPlaceSizing(tile, VPM_X_AND_Y, DDSP_TRIM_AREA);
+				break;
+
+			case WID_ETT_FILL_LAND: // Level land button
+				VpStartPlaceSizing(tile, VPM_X_AND_Y, DDSP_FILL_AREA);
+				break;
+
+			case WID_ETT_PAINT_LOWER_LAND: // Lower land button
+				VpStartDrawing(tile, VPM_X_AND_Y, DDSP_DRAW_LOWER_AREA);
+				break;
+
+			case WID_ETT_PAINT_RAISE_LAND: // Raise land button
+				VpStartDrawing(tile, VPM_X_AND_Y, DDSP_DRAW_RAISE_AREA);
+				break;
+
+			case WID_ETT_PAINT_LEVEL_LAND: // Level land button
+				_start_tile_height = TileHeight(tile);
+				VpStartDrawing(tile, VPM_X_AND_Y, DDSP_DRAW_LEVEL_AREA);
+				break;
+
 			case WID_ETT_PLACE_DESERT: // Place desert button (in tropical climate)
 				VpStartPlaceSizing(tile, VPM_X_AND_Y, DDSP_CREATE_DESERT);
 				break;
@@ -680,7 +805,25 @@ struct ScenarioEditorLandscapeGenerationWindow : Window {
 
 	virtual void OnPlaceDrag(ViewportPlaceMethod select_method, ViewportDragDropSelectionProcess select_proc, Point pt)
 	{
-		VpSelectTilesWithMethod(pt.x, pt.y, select_method);
+		switch (select_proc) {
+			default:
+				VpSelectTilesWithMethod(pt.x, pt.y, select_method);
+				break;
+			case DDSP_DRAW_LOWER_AREA:
+			case DDSP_DRAW_RAISE_AREA:
+			case DDSP_DRAW_LEVEL_AREA:
+				// Check for pointer inside the map
+				if (pt.x == -1) return;
+
+				TileIndex cur_tile = TileVirtXY(pt.x, pt.y);
+
+				GUIPlaceProcDraw(select_proc, cur_tile);
+
+				// Update highlight position
+				uint s = ((_terraform_size - 1) * TILE_SIZE);
+				VpHandleDrawing(cur_tile, TileVirtXY(pt.x + s, pt.y + s));
+				break;
+		}
 	}
 
 	virtual void OnPlaceMouseUp(ViewportPlaceMethod select_method, ViewportDragDropSelectionProcess select_proc, Point pt, TileIndex start_tile, TileIndex end_tile)
@@ -693,8 +836,15 @@ struct ScenarioEditorLandscapeGenerationWindow : Window {
 				case DDSP_RAISE_AND_LEVEL_AREA:
 				case DDSP_LOWER_AND_LEVEL_AREA:
 				case DDSP_LEVEL_AREA:
+				case DDSP_TRIM_AREA:
+				case DDSP_FILL_AREA:
 				case DDSP_DEMOLISH_AREA:
 					GUIPlaceProcDragXY(select_proc, start_tile, end_tile);
+					break;
+				case DDSP_DRAW_LOWER_AREA:
+				case DDSP_DRAW_RAISE_AREA:
+				case DDSP_DRAW_LEVEL_AREA:
+					// Not handled here
 					break;
 			}
 		}
