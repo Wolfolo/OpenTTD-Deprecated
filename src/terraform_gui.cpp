@@ -601,6 +601,7 @@ static void ResetLandscapeConfirmationCallback(Window *w, bool confirmed)
 /** Landscape generation window handler in the scenario editor. */
 struct ScenarioEditorLandscapeGenerationWindow : Window {
 	int last_user_action; ///< Last started user action.
+	TileIndex cur_drawing_tile; ///< Current drawing tile for terraforming paintbrush
 
 	ScenarioEditorLandscapeGenerationWindow(WindowDesc *desc, WindowNumber window_number) : Window(desc)
 	{
@@ -817,7 +818,11 @@ struct ScenarioEditorLandscapeGenerationWindow : Window {
 
 				TileIndex cur_tile = TileVirtXY(pt.x, pt.y);
 
-				GUIPlaceProcDraw(select_proc, cur_tile);
+				if (cur_tile != cur_drawing_tile) {
+					GUIPlaceProcDraw(select_proc, cur_tile);
+				}
+				
+				cur_drawing_tile = cur_tile;
 
 				// Update highlight position
 				uint s = ((_terraform_size - 1) * TILE_SIZE);
@@ -845,6 +850,7 @@ struct ScenarioEditorLandscapeGenerationWindow : Window {
 				case DDSP_DRAW_RAISE_AREA:
 				case DDSP_DRAW_LEVEL_AREA:
 					// Not handled here
+					cur_drawing_tile = NULL;
 					break;
 			}
 		}
