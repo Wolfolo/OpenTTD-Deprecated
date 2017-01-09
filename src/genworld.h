@@ -81,6 +81,17 @@ enum GenWorldProgress {
 	GWP_CLASS_COUNT
 };
 
+/**
+ * List of tree placer algorithm.
+ *
+ * This enumeration defines all possible tree placer algorithm in the game.
+ */
+enum TreePlacer {
+	TP_NONE,     ///< No tree placer algorithm
+	TP_ORIGINAL, ///< The original algorithm
+	TP_IMPROVED, ///< A 'improved' algorithm
+};
+
 /* genworld.cpp */
 bool IsGenerateWorldThreaded();
 void GenerateWorldSetCallback(GWDoneProc *proc);

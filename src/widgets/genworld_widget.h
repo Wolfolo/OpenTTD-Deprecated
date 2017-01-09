@@ -40,6 +40,19 @@ enum GenerateLandscapeWidgets {
 	WID_GL_SNOW_LEVEL_UP,               ///< Increase snow level.
 
 	WID_GL_TREE_PULLDOWN,               ///< Dropdown 'Tree algorithm'.
+
+	WID_GL_TREE_RADIUS_DOWN,            ///< Decrease search trees radius.
+	WID_GL_TREE_RADIUS_TEXT,            ///< Search trees radius.
+	WID_GL_TREE_RADIUS_UP,              ///< Increase search trees radius.
+
+	WID_GL_TREE_MAX_HEIGHT_DOWN,        ///< Decrease no trees height.
+	WID_GL_TREE_MAX_HEIGHT_TEXT,        ///< No trees height.
+	WID_GL_TREE_MAX_HEIGHT_UP,          ///< Increase no trees height.
+
+	WID_GL_TREE_EVERGREEN_HEIGHT_DOWN,  ///< Decrease evergreen trees height
+	WID_GL_TREE_EVERGREEN_HEIGHT_TEXT,  ///< Evergreen trees height
+	WID_GL_TREE_EVERGREEN_HEIGHT_UP,    ///< Increase evergreen trees height.
+
 	WID_GL_LANDSCAPE_PULLDOWN,          ///< Dropdown 'Land generator'.
 
 	WID_GL_HEIGHTMAP_NAME_TEXT,         ///< Heightmap name.

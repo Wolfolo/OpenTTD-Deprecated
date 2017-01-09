@@ -1317,6 +1317,12 @@ STR_CONFIG_SETTING_TREE_PLACER_HELPTEXT                         :Choose the dist
 STR_CONFIG_SETTING_TREE_PLACER_NONE                             :None
 STR_CONFIG_SETTING_TREE_PLACER_ORIGINAL                         :Original
 STR_CONFIG_SETTING_TREE_PLACER_IMPROVED                         :Improved
+STR_CONFIG_SETTING_TREE_PLACER_NO_TREES_HEIGHT                  :Forbid automatic plant of trees above this height: {STRING2}
+STR_CONFIG_SETTING_TREE_PLACER_NO_TREES_HEIGHT_HELPTEXT         :Disable any tree planting above the defined height, manual planting will be possible. The height is slightly randomised to not have a straight line of trees
+STR_CONFIG_SETTING_TREE_PLACER_EVERGREEN_MIN_HEIGHT             :Prefer planting evergreen trees above this height: {STRING2}
+STR_CONFIG_SETTING_TREE_PLACER_EVERGREEN_MIN_HEIGHT_HELPTEXT    :Below the defined height only temperate trees will be planted, above that height only arctic trees will be planted. Manual planting allows only current landscape type trees to be planted anywhere. The height is slightly randomised to not have a straight line of trees
+STR_CONFIG_SETTING_TREE_PLACER_RADIUS                           :Radius for tree placer algorithm: {STRING2}
+STR_CONFIG_SETTING_TREE_PLACER_RADIUS_HELPTEXT                  :Chose the radius of tiles in which a new automatic planted tree should check for its type. The higher the value more trees will be grouped in uniform patches. High values might slow down the game. Default 0 is original
 STR_CONFIG_SETTING_ROAD_SIDE                                    :Road vehicles: {STRING2}
 STR_CONFIG_SETTING_ROAD_SIDE_HELPTEXT                           :Choose the driving side
 STR_CONFIG_SETTING_HEIGHTMAP_ROTATION                           :Heightmap rotation: {STRING2}
@@ -2731,6 +2737,15 @@ STR_MAPGEN_SNOW_LINE_UP                                         :{BLACK}Move the
 STR_MAPGEN_SNOW_LINE_DOWN                                       :{BLACK}Move the snow line height one down
 STR_MAPGEN_LAND_GENERATOR                                       :{BLACK}Land generator:
 STR_MAPGEN_TREE_PLACER                                          :{BLACK}Tree algorithm:
+STR_MAPGEN_TREE_RADIUS                                          :{BLACK}Tree search radius:
+STR_MAPGEN_TREE_RADIUS_UP                                       :{BLACK}Move the tree search radius one up
+STR_MAPGEN_TREE_RADIUS_DOWN                                     :{BLACK}Move the tree search radius one down
+STR_MAPGEN_TREE_MAX_HEIGHT                                      :{BLACK}Trees max height:
+STR_MAPGEN_TREE_MAX_HEIGHT_UP                                   :{BLACK}Move the tree max height one up
+STR_MAPGEN_TREE_MAX_HEIGHT_DOWN                                 :{BLACK}Move the tree max height one down
+STR_MAPGEN_TREE_EVERGREEN_HEIGHT                                :{BLACK}Evergreen trees height:
+STR_MAPGEN_TREE_EVERGREEN_HEIGHT_UP                             :{BLACK}Move the tree evergreen height one up
+STR_MAPGEN_TREE_EVERGREEN_HEIGHT_DOWN                           :{BLACK}Move the tree evergreen height one down
 STR_MAPGEN_TERRAIN_TYPE                                         :{BLACK}Terrain type:
 STR_MAPGEN_QUANTITY_OF_SEA_LAKES                                :{BLACK}Sea level:
 STR_MAPGEN_QUANTITY_OF_RIVERS                                   :{BLACK}Rivers:

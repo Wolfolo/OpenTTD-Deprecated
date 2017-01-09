@@ -87,6 +87,9 @@ static const NWidgetPart _nested_generate_landscape_widgets[] = {
 					NWidget(WWT_TEXT, COLOUR_ORANGE), SetDataTip(STR_MAPGEN_VARIETY, STR_NULL), SetFill(1, 1),
 					NWidget(WWT_TEXT, COLOUR_ORANGE), SetDataTip(STR_MAPGEN_QUANTITY_OF_SEA_LAKES, STR_NULL), SetFill(1, 1),
 					NWidget(WWT_TEXT, COLOUR_ORANGE), SetDataTip(STR_MAPGEN_TREE_PLACER, STR_NULL), SetFill(1, 1),
+					NWidget(WWT_TEXT, COLOUR_ORANGE), SetDataTip(STR_MAPGEN_TREE_RADIUS, STR_NULL), SetFill(1, 1),
+					NWidget(WWT_TEXT, COLOUR_ORANGE), SetDataTip(STR_MAPGEN_TREE_MAX_HEIGHT, STR_NULL), SetFill(1, 1),
+					NWidget(WWT_TEXT, COLOUR_ORANGE), SetDataTip(STR_MAPGEN_TREE_EVERGREEN_HEIGHT, STR_NULL), SetFill(1, 1),
 					NWidget(WWT_TEXT, COLOUR_ORANGE), SetDataTip(STR_MAPGEN_BORDER_TYPE, STR_NULL), SetFill(1, 1),
 				EndContainer(),
 				/* Widgets at the right of the labels. */
@@ -103,6 +106,24 @@ static const NWidgetPart _nested_generate_landscape_widgets[] = {
 					NWidget(WWT_DROPDOWN, COLOUR_ORANGE, WID_GL_VARIETY_PULLDOWN), SetDataTip(STR_JUST_STRING, STR_NULL), SetFill(1, 0),
 					NWidget(WWT_DROPDOWN, COLOUR_ORANGE, WID_GL_WATER_PULLDOWN), SetDataTip(STR_JUST_STRING, STR_NULL), SetFill(1, 0),
 					NWidget(WWT_DROPDOWN, COLOUR_ORANGE, WID_GL_TREE_PULLDOWN), SetDataTip(STR_JUST_STRING, STR_NULL), SetFill(1, 0),
+					/* Tree search radius */
+					NWidget(NWID_HORIZONTAL),
+						NWidget(WWT_IMGBTN, COLOUR_ORANGE, WID_GL_TREE_RADIUS_DOWN), SetDataTip(SPR_ARROW_DOWN, STR_MAPGEN_TREE_RADIUS_DOWN), SetFill(0, 1),
+						NWidget(WWT_TEXTBTN, COLOUR_ORANGE, WID_GL_TREE_RADIUS_TEXT), SetDataTip(STR_BLACK_INT, STR_NULL), SetFill(1, 0),
+						NWidget(WWT_IMGBTN, COLOUR_ORANGE, WID_GL_TREE_RADIUS_UP), SetDataTip(SPR_ARROW_UP, STR_MAPGEN_TREE_RADIUS_UP), SetFill(0, 1),
+					EndContainer(),
+					/* Trees max height */
+					NWidget(NWID_HORIZONTAL),
+						NWidget(WWT_IMGBTN, COLOUR_ORANGE, WID_GL_TREE_MAX_HEIGHT_DOWN), SetDataTip(SPR_ARROW_DOWN, STR_MAPGEN_TREE_MAX_HEIGHT_DOWN), SetFill(0, 1),
+						NWidget(WWT_TEXTBTN, COLOUR_ORANGE, WID_GL_TREE_MAX_HEIGHT_TEXT), SetDataTip(STR_BLACK_INT, STR_NULL), SetFill(1, 0),
+						NWidget(WWT_IMGBTN, COLOUR_ORANGE, WID_GL_TREE_MAX_HEIGHT_UP), SetDataTip(SPR_ARROW_UP, STR_MAPGEN_TREE_MAX_HEIGHT_UP), SetFill(0, 1),
+					EndContainer(),
+					/* Evergreen trees height */
+					NWidget(NWID_HORIZONTAL),
+						NWidget(WWT_IMGBTN, COLOUR_ORANGE, WID_GL_TREE_EVERGREEN_HEIGHT_DOWN), SetDataTip(SPR_ARROW_DOWN, STR_MAPGEN_TREE_EVERGREEN_HEIGHT_DOWN), SetFill(0, 1),
+						NWidget(WWT_TEXTBTN, COLOUR_ORANGE, WID_GL_TREE_EVERGREEN_HEIGHT_TEXT), SetDataTip(STR_BLACK_INT, STR_NULL), SetFill(1, 0),
+						NWidget(WWT_IMGBTN, COLOUR_ORANGE, WID_GL_TREE_EVERGREEN_HEIGHT_UP), SetDataTip(SPR_ARROW_UP, STR_MAPGEN_TREE_EVERGREEN_HEIGHT_UP), SetFill(0, 1),
+					EndContainer(),
 					NWidget(WWT_TEXTBTN, COLOUR_ORANGE, WID_GL_BORDERS_RANDOM), SetDataTip(STR_JUST_STRING, STR_NULL), SetFill(1, 0),
 				EndContainer(),
 			EndContainer(),
@@ -205,6 +226,9 @@ static const NWidgetPart _nested_heightmap_load_widgets[] = {
 				NWidget(WWT_TEXT, COLOUR_ORANGE), SetDataTip(STR_MAPGEN_NUMBER_OF_INDUSTRIES, STR_NULL), SetFill(1, 1),
 				NWidget(WWT_TEXT, COLOUR_ORANGE), SetDataTip(STR_MAPGEN_QUANTITY_OF_RIVERS, STR_NULL), SetFill(1, 1),
 				NWidget(WWT_TEXT, COLOUR_ORANGE), SetDataTip(STR_MAPGEN_TREE_PLACER, STR_NULL), SetFill(1, 1),
+				NWidget(WWT_TEXT, COLOUR_ORANGE), SetDataTip(STR_MAPGEN_TREE_RADIUS, STR_NULL), SetFill(1, 1),
+				NWidget(WWT_TEXT, COLOUR_ORANGE), SetDataTip(STR_MAPGEN_TREE_MAX_HEIGHT, STR_NULL), SetFill(1, 1),
+				NWidget(WWT_TEXT, COLOUR_ORANGE), SetDataTip(STR_MAPGEN_TREE_EVERGREEN_HEIGHT, STR_NULL), SetFill(1, 1),
 			EndContainer(),
 			/* Widgets at the right of the labels. */
 			NWidget(NWID_VERTICAL), SetPIP(0, 4, 0),
@@ -222,6 +246,24 @@ static const NWidgetPart _nested_heightmap_load_widgets[] = {
 						NWidget(WWT_DROPDOWN, COLOUR_ORANGE, WID_GL_INDUSTRY_PULLDOWN), SetDataTip(STR_JUST_STRING, STR_NULL), SetFill(1, 0),
 						NWidget(WWT_DROPDOWN, COLOUR_ORANGE, WID_GL_RIVER_PULLDOWN), SetDataTip(STR_JUST_STRING, STR_NULL), SetFill(1, 0),
 						NWidget(WWT_DROPDOWN, COLOUR_ORANGE, WID_GL_TREE_PULLDOWN), SetDataTip(STR_JUST_STRING, STR_NULL), SetFill(1, 0),
+						/* Tree search radius */
+						NWidget(NWID_HORIZONTAL),
+							NWidget(WWT_IMGBTN, COLOUR_ORANGE, WID_GL_TREE_RADIUS_DOWN), SetDataTip(SPR_ARROW_DOWN, STR_MAPGEN_TREE_RADIUS_DOWN), SetFill(0, 1),
+							NWidget(WWT_TEXTBTN, COLOUR_ORANGE, WID_GL_TREE_RADIUS_TEXT), SetDataTip(STR_BLACK_INT, STR_NULL), SetFill(1, 0),
+							NWidget(WWT_IMGBTN, COLOUR_ORANGE, WID_GL_TREE_RADIUS_UP), SetDataTip(SPR_ARROW_UP, STR_MAPGEN_TREE_RADIUS_UP), SetFill(0, 1),
+						EndContainer(),
+						/* Trees max height */
+						NWidget(NWID_HORIZONTAL),
+							NWidget(WWT_IMGBTN, COLOUR_ORANGE, WID_GL_TREE_MAX_HEIGHT_DOWN), SetDataTip(SPR_ARROW_DOWN, STR_MAPGEN_TREE_MAX_HEIGHT_DOWN), SetFill(0, 1),
+							NWidget(WWT_TEXTBTN, COLOUR_ORANGE, WID_GL_TREE_MAX_HEIGHT_TEXT), SetDataTip(STR_BLACK_INT, STR_NULL), SetFill(1, 0),
+							NWidget(WWT_IMGBTN, COLOUR_ORANGE, WID_GL_TREE_MAX_HEIGHT_UP), SetDataTip(SPR_ARROW_UP, STR_MAPGEN_TREE_MAX_HEIGHT_UP), SetFill(0, 1),
+						EndContainer(),
+						/* Evergreen trees height */
+						NWidget(NWID_HORIZONTAL),
+							NWidget(WWT_IMGBTN, COLOUR_ORANGE, WID_GL_TREE_EVERGREEN_HEIGHT_DOWN), SetDataTip(SPR_ARROW_DOWN, STR_MAPGEN_TREE_EVERGREEN_HEIGHT_DOWN), SetFill(0, 1),
+							NWidget(WWT_TEXTBTN, COLOUR_ORANGE, WID_GL_TREE_EVERGREEN_HEIGHT_TEXT), SetDataTip(STR_BLACK_INT, STR_NULL), SetFill(1, 0),
+							NWidget(WWT_IMGBTN, COLOUR_ORANGE, WID_GL_TREE_EVERGREEN_HEIGHT_UP), SetDataTip(SPR_ARROW_UP, STR_MAPGEN_TREE_EVERGREEN_HEIGHT_UP), SetFill(0, 1),
+						EndContainer(),
 					EndContainer(),
 					NWidget(NWID_VERTICAL), SetPIP(0, 4, 0),
 						NWidget(NWID_HORIZONTAL), SetPIP(0, 3, 0),
@@ -340,6 +382,9 @@ struct GenerateLandscapeWindow : public Window {
 			case WID_GL_MAPSIZE_Y_PULLDOWN:   SetDParam(0, 1 << _settings_newgame.game_creation.map_y); break;
 			case WID_GL_MAX_HEIGHTLEVEL_TEXT: SetDParam(0, _settings_newgame.construction.max_heightlevel); break;
 			case WID_GL_SNOW_LEVEL_TEXT:      SetDParam(0, _settings_newgame.game_creation.snow_line_height); break;
+			case WID_GL_TREE_RADIUS_TEXT:     SetDParam(0, _settings_newgame.game_creation.tree_placer_radius); break;
+			case WID_GL_TREE_EVERGREEN_HEIGHT_TEXT: SetDParam(0, _settings_newgame.game_creation.evergreen_min_height); break;
+			case WID_GL_TREE_MAX_HEIGHT_TEXT: SetDParam(0, _settings_newgame.game_creation.no_trees_height); break;
 
 			case WID_GL_TOWN_PULLDOWN:
 				if (_game_mode == GM_EDITOR) {
@@ -431,6 +476,23 @@ struct GenerateLandscapeWindow : public Window {
 		this->SetWidgetDisabledState(WID_GL_START_DATE_UP,   _settings_newgame.game_creation.starting_year >= MAX_YEAR);
 		this->SetWidgetDisabledState(WID_GL_SNOW_LEVEL_DOWN, _settings_newgame.game_creation.snow_line_height <= MIN_SNOWLINE_HEIGHT || _settings_newgame.game_creation.landscape != LT_ARCTIC);
 		this->SetWidgetDisabledState(WID_GL_SNOW_LEVEL_UP,   _settings_newgame.game_creation.snow_line_height >= MAX_SNOWLINE_HEIGHT || _settings_newgame.game_creation.landscape != LT_ARCTIC);
+
+		this->SetWidgetDisabledState(WID_GL_TREE_RADIUS_DOWN, _settings_newgame.game_creation.tree_placer_radius <= 1 || _settings_newgame.game_creation.tree_placer != TP_IMPROVED);
+		this->SetWidgetDisabledState(WID_GL_TREE_RADIUS_UP, _settings_newgame.game_creation.tree_placer_radius >= MAX_MAX_HEIGHTLEVEL || _settings_newgame.game_creation.tree_placer != TP_IMPROVED);
+		this->SetWidgetDisabledState(WID_GL_TREE_MAX_HEIGHT_DOWN, _settings_newgame.game_creation.no_trees_height <= 1 || _settings_newgame.game_creation.tree_placer != TP_IMPROVED);
+		this->SetWidgetDisabledState(WID_GL_TREE_MAX_HEIGHT_UP, _settings_newgame.game_creation.no_trees_height >= MAX_MAX_HEIGHTLEVEL || _settings_newgame.game_creation.no_trees_height >= _settings_newgame.construction.max_heightlevel || _settings_newgame.game_creation.tree_placer != TP_IMPROVED);
+		this->SetWidgetDisabledState(WID_GL_TREE_EVERGREEN_HEIGHT_DOWN, _settings_newgame.game_creation.evergreen_min_height <= 1 || _settings_newgame.game_creation.tree_placer != TP_IMPROVED);
+
+		bool additional_checks = _settings_newgame.game_creation.evergreen_min_height >= MAX_MAX_HEIGHTLEVEL || _settings_newgame.game_creation.evergreen_min_height >= _settings_newgame.construction.max_heightlevel || _settings_newgame.game_creation.tree_placer != TP_IMPROVED;
+		if (_settings_newgame.game_creation.landscape == LT_ARCTIC) {
+			additional_checks |= _settings_newgame.game_creation.evergreen_min_height >= _settings_newgame.game_creation.snow_line_height;
+		}
+		this->SetWidgetDisabledState(WID_GL_TREE_EVERGREEN_HEIGHT_UP, additional_checks);
+
+		/* Disable tree settings if not tree placing algorithm is improved */
+		this->SetWidgetDisabledState(WID_GL_TREE_RADIUS_TEXT, _settings_newgame.game_creation.tree_placer != TP_IMPROVED);
+		this->SetWidgetDisabledState(WID_GL_TREE_MAX_HEIGHT_TEXT, _settings_newgame.game_creation.tree_placer != TP_IMPROVED);
+		this->SetWidgetDisabledState(WID_GL_TREE_EVERGREEN_HEIGHT_TEXT, _settings_newgame.game_creation.tree_placer != TP_IMPROVED);
 
 		/* Do not allow a custom sea level with the original land generator. */
 		if (_settings_newgame.game_creation.land_generator == LG_ORIGINAL &&
@@ -588,6 +650,15 @@ struct GenerateLandscapeWindow : public Window {
 					this->HandleButtonClick(widget);
 
 					_settings_newgame.construction.max_heightlevel = Clamp(_settings_newgame.construction.max_heightlevel + widget - WID_GL_MAX_HEIGHTLEVEL_TEXT, MIN_MAX_HEIGHTLEVEL, MAX_MAX_HEIGHTLEVEL);
+
+					/* Keep other settings synced */
+					if (_settings_newgame.game_creation.evergreen_min_height > _settings_newgame.construction.max_heightlevel) {
+						_settings_newgame.game_creation.evergreen_min_height = _settings_newgame.construction.max_heightlevel;
+					}
+
+					if (_settings_newgame.game_creation.no_trees_height > _settings_newgame.construction.max_heightlevel) {
+						_settings_newgame.game_creation.no_trees_height = _settings_newgame.construction.max_heightlevel;
+					}
 					this->InvalidateData();
 				}
 				_left_button_clicked = false;
@@ -625,6 +696,10 @@ struct GenerateLandscapeWindow : public Window {
 					this->HandleButtonClick(widget);
 
 					_settings_newgame.game_creation.snow_line_height = Clamp(_settings_newgame.game_creation.snow_line_height + widget - WID_GL_SNOW_LEVEL_TEXT, MIN_SNOWLINE_HEIGHT, MAX_SNOWLINE_HEIGHT);
+
+					if (_settings_newgame.game_creation.evergreen_min_height > _settings_newgame.game_creation.snow_line_height) {
+						_settings_newgame.game_creation.evergreen_min_height = _settings_newgame.game_creation.snow_line_height;
+					}
 					this->InvalidateData();
 				}
 				_left_button_clicked = false;
@@ -638,6 +713,39 @@ struct GenerateLandscapeWindow : public Window {
 
 			case WID_GL_TREE_PULLDOWN: // Tree placer
 				ShowDropDownMenu(this, _tree_placer, _settings_newgame.game_creation.tree_placer, WID_GL_TREE_PULLDOWN, 0, 0);
+				break;
+
+			case WID_GL_TREE_RADIUS_DOWN:
+			case WID_GL_TREE_RADIUS_UP:
+				/* Don't allow too fast scrolling */
+				if (!(this->flags & WF_TIMEOUT) || this->timeout_timer <= 1) {
+					this->HandleButtonClick(widget);
+					_settings_newgame.game_creation.tree_placer_radius = Clamp(_settings_newgame.game_creation.tree_placer_radius + (widget - WID_GL_TREE_RADIUS_TEXT) * 4, 0, 32);
+					this->InvalidateData();
+				}
+				_left_button_clicked = false;
+				break;
+
+			case WID_GL_TREE_MAX_HEIGHT_DOWN:
+			case WID_GL_TREE_MAX_HEIGHT_UP:
+				/* Don't allow too fast scrolling */
+				if (!(this->flags & WF_TIMEOUT) || this->timeout_timer <= 1) {
+					this->HandleButtonClick(widget);
+					_settings_newgame.game_creation.no_trees_height = Clamp(_settings_newgame.game_creation.no_trees_height + widget - WID_GL_TREE_MAX_HEIGHT_TEXT, 1, MAX_MAX_HEIGHTLEVEL);
+					this->InvalidateData();
+				}
+				_left_button_clicked = false;
+				break;
+
+			case WID_GL_TREE_EVERGREEN_HEIGHT_DOWN:
+			case WID_GL_TREE_EVERGREEN_HEIGHT_UP:
+				/* Don't allow too fast scrolling */
+				if (!(this->flags & WF_TIMEOUT) || this->timeout_timer <= 1) {
+					this->HandleButtonClick(widget);
+					_settings_newgame.game_creation.evergreen_min_height = Clamp(_settings_newgame.game_creation.evergreen_min_height + widget - WID_GL_TREE_EVERGREEN_HEIGHT_TEXT, 1, MAX_MAX_HEIGHTLEVEL);
+					this->InvalidateData();
+				}
+				_left_button_clicked = false;
 				break;
 
 			case WID_GL_LANDSCAPE_PULLDOWN: // Landscape generator
@@ -705,7 +813,14 @@ struct GenerateLandscapeWindow : public Window {
 
 	virtual void OnTimeout()
 	{
-		static const int raise_widgets[] = {WID_GL_MAX_HEIGHTLEVEL_DOWN, WID_GL_MAX_HEIGHTLEVEL_UP, WID_GL_START_DATE_DOWN, WID_GL_START_DATE_UP, WID_GL_SNOW_LEVEL_UP, WID_GL_SNOW_LEVEL_DOWN, WIDGET_LIST_END};
+		static const int raise_widgets[] = {
+			WID_GL_MAX_HEIGHTLEVEL_DOWN, WID_GL_MAX_HEIGHTLEVEL_UP,
+			WID_GL_START_DATE_DOWN, WID_GL_START_DATE_UP,
+			WID_GL_SNOW_LEVEL_UP, WID_GL_SNOW_LEVEL_DOWN,
+			WID_GL_TREE_RADIUS_UP, WID_GL_TREE_RADIUS_DOWN,
+			WID_GL_TREE_EVERGREEN_HEIGHT_UP, WID_GL_TREE_EVERGREEN_HEIGHT_DOWN,
+			WID_GL_TREE_MAX_HEIGHT_UP, WID_GL_TREE_MAX_HEIGHT_DOWN,
+			WIDGET_LIST_END};
 		for (const int *widget = raise_widgets; *widget != WIDGET_LIST_END; widget++) {
 			if (this->IsWidgetLowered(*widget)) {
 				this->RaiseWidget(*widget);

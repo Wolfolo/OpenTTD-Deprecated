@@ -31,17 +31,6 @@
 
 #include "safeguards.h"
 
-/**
- * List of tree placer algorithm.
- *
- * This enumeration defines all possible tree placer algorithm in the game.
- */
-enum TreePlacer {
-	TP_NONE,     ///< No tree placer algorithm
-	TP_ORIGINAL, ///< The original algorithm
-	TP_IMPROVED, ///< A 'improved' algorithm
-};
-
 /** Where to place trees while in-game? */
 enum ExtraTreePlacement {
 	ETP_NONE,       ///< Place trees on no tiles
@@ -56,6 +45,11 @@ static const uint16 DEFAULT_TREE_STEPS = 1000;             ///< Default number o
 static const uint16 DEFAULT_RAINFOREST_TREE_STEPS = 15000; ///< Default number of attempts for placing extra trees at rainforest in tropic.
 static const uint16 EDITOR_TREE_DIV = 5;                   ///< Game editor tree generation divisor factor.
 
+static uint GetRandomDeltaHeight()
+{
+	return GB(Random(), 0, 2);
+}
+
 /**
  * Tests if a tile can be converted to MP_TREES
  * This is true for clear ground without farms or rocks.
@@ -64,7 +58,7 @@ static const uint16 EDITOR_TREE_DIV = 5;                   ///< Game editor tree
  * @param allow_desert Allow planting trees on CLEAR_DESERT?
  * @return true if trees can be built.
  */
-static bool CanPlantTreesOnTile(TileIndex tile, bool allow_desert)
+static bool CanConvertTileToTrees(TileIndex tile, bool allow_desert)
 {
 	switch (GetTileType(tile)) {
 		case MP_WATER:
@@ -75,6 +69,61 @@ static bool CanPlantTreesOnTile(TileIndex tile, bool allow_desert)
 			       (allow_desert || !IsClearGround(tile, CLEAR_DESERT));
 
 		default: return false;
+	}
+}
+
+/**
+ * Test if trees can be planted in a tile by performing additional checks
+ * 
+ * @param tile the tile of interest
+ * @param allow_desert Allow planting trees on CLEAR_DESERT?
+ * @return true if trees can be built.
+ */
+static bool CanPlantTreesOnTile(TileIndex tile, bool allow_desert)
+{
+	return CanConvertTileToTrees(tile, allow_desert) && (TileHeight(tile) < (_settings_game.game_creation.no_trees_height - GetRandomDeltaHeight()));
+}
+
+/**
+ * Tests if a tree belongs to a given tile
+ *
+ * This function ensure that a tree of the given type can be planted on the given tile
+ * to avoid strange tree placement like rainforest trees in the middle of the desert
+ * caused by "walking" when the GetNearestTreeType() with high radius is used.
+ *
+ * @param tile The tile
+ * @param tree The TreeType to check the tile for suitability
+ */
+static bool IsTileSuitableForTree(TileIndex tile, TreeType tree)
+{
+	/* Keep the old behaviour for original placing algorithm */
+	if (_settings_game.game_creation.tree_placer != TP_IMPROVED) return true;
+
+	uint8 evergreen_min_height = _settings_game.game_creation.evergreen_min_height - GetRandomDeltaHeight();
+
+	switch (_settings_game.game_creation.landscape) {
+		case LT_ARCTIC:
+			/* In arctic clamp the heights to snow line */
+			evergreen_min_height = min(MIN_SNOWLINE_HEIGHT, evergreen_min_height);
+
+			/* FALL THROUGH */
+
+		case LT_TEMPERATE:
+			if (evergreen_min_height < TileHeight(tile)) {
+				return IsInsideBS(tree, TREE_SUB_ARCTIC, TREE_COUNT_SUB_ARCTIC);
+			}
+
+			return IsInsideBS(tree, TREE_TEMPERATE, TREE_COUNT_TEMPERATE);
+
+		case LT_TROPIC:
+			switch (GetTropicZone(tile)) {
+				case TROPICZONE_NORMAL:  return IsInsideBS(tree, TREE_SUB_TROPICAL, TREE_COUNT_SUB_TROPICAL);
+				case TROPICZONE_DESERT:  return tree == TREE_CACTUS;
+				default:                 return IsInsideBS(tree, TREE_RAINFOREST, TREE_COUNT_RAINFOREST);
+			}
+
+		default:
+			return IsInsideBS(tree, TREE_TOYLAND, TREE_COUNT_TOYLAND);
 	}
 }
 
@@ -92,7 +141,11 @@ static bool CanPlantTreesOnTile(TileIndex tile, bool allow_desert)
 static void PlantTreesOnTile(TileIndex tile, TreeType treetype, uint count, uint growth)
 {
 	assert(treetype != TREE_INVALID);
-	assert(CanPlantTreesOnTile(tile, true));
+	assert(CanConvertTileToTrees(tile, true));
+
+	if (!(CanPlantTreesOnTile(tile, true) && IsTileSuitableForTree(tile, treetype))) {
+		return;
+	}
 
 	TreeGround ground;
 	uint density = 3;
@@ -131,12 +184,23 @@ static void PlantTreesOnTile(TileIndex tile, TreeType treetype, uint count, uint
  */
 static TreeType GetRandomTreeType(TileIndex tile, uint seed)
 {
-	switch (_settings_game.game_creation.landscape) {
-		case LT_TEMPERATE:
-			return (TreeType)(seed * TREE_COUNT_TEMPERATE / 256 + TREE_TEMPERATE);
+	uint8 evergreen_min_height = _settings_game.game_creation.evergreen_min_height - GetRandomDeltaHeight();
 
+	switch (_settings_game.game_creation.landscape) {
 		case LT_ARCTIC:
-			return (TreeType)(seed * TREE_COUNT_SUB_ARCTIC / 256 + TREE_SUB_ARCTIC);
+			if (_settings_game.game_creation.tree_placer != TP_IMPROVED)
+				return (TreeType)(seed * TREE_COUNT_SUB_ARCTIC / 256 + TREE_SUB_ARCTIC);
+
+			/* In arctic clamp the heights to snow line */
+			evergreen_min_height = min(MIN_SNOWLINE_HEIGHT, evergreen_min_height);
+
+			/* FALL THROUGH */
+		case LT_TEMPERATE:
+			if ((_settings_game.game_creation.tree_placer == TP_IMPROVED) && (evergreen_min_height < TileHeight(tile))) {
+				return (TreeType)(seed * TREE_COUNT_SUB_ARCTIC / 256 + TREE_SUB_ARCTIC);
+			}
+
+			return (TreeType)(seed * TREE_COUNT_TEMPERATE / 256 + TREE_TEMPERATE);
 
 		case LT_TROPIC:
 			switch (GetTropicZone(tile)) {
@@ -151,20 +215,58 @@ static TreeType GetRandomTreeType(TileIndex tile, uint seed)
 }
 
 /**
- * Make a random tree tile of the given tile
+ * Callback to test if the tile has trees on it
+ *
+ * @param t The tile to check for trees
+ * @return False if the tile is invalid or doesn't have a tree
+ */
+bool CbTileHasTree(TileIndex t, void*)
+{
+	return (IsValidTile(t) && IsTileType(t, MP_TREES));
+}
+
+/**
+ * Looks for a tree on nearby tiles and return the type of the first one found
+ *
+ * @param tile The tile from which start the search
+ * @return The found tree type
+ */
+static TreeType GetNearestTreeType(TileIndex tile)
+{
+	TileIndex t = tile;
+	TreeType tree = TREE_INVALID;
+
+	if (_settings_game.game_creation.tree_placer == TP_IMPROVED
+		&& GetTropicZone(tile) != TROPICZONE_DESERT /* Don't plant many cactus trees on desert */
+		&& (_settings_game.game_creation.tree_placer_radius > 0)
+		&& CircularTileSearch(&t, _settings_game.game_creation.tree_placer_radius, CbTileHasTree, NULL)) {
+		tree = GetTreeType(t);
+	}
+
+	return tree;
+}
+
+/**
+ * Make a tree tile of the given tile
  *
  * Create a new tree-tile for the given tile. The second parameter is used for
  * randomness like type and number of trees.
  *
  * @param tile The tile to make a tree-tile from
  * @param r The randomness value from a Random() value
+ * @param tree The TreeType to plant
  */
-static void PlaceTree(TileIndex tile, uint32 r)
+static void PlaceTree(TileIndex tile, uint32 r, TreeType tree = TREE_INVALID)
 {
-	TreeType tree = GetRandomTreeType(tile, GB(r, 24, 8));
+	if (tree == TREE_INVALID) {
+		tree = GetRandomTreeType(tile, GB(r, 24, 8));
+	}
 
 	if (tree != TREE_INVALID) {
 		PlantTreesOnTile(tile, tree, GB(r, 22, 2), min(GB(r, 16, 3), 6));
+
+		/* The planting of trees could have failed because the tile is over the no trees height */
+		if (!IsTileType(tile, MP_TREES)) return;
 
 		/* Rerandomize ground, if neither snow nor shore */
 		TreeGround ground = GetTreeGround(tile);
@@ -198,7 +300,7 @@ static void PlaceTreeGroups(uint num_groups)
 			IncreaseGeneratingWorldProgress(GWP_TREE);
 
 			if (cur_tile != INVALID_TILE && dist <= 13 && CanPlantTreesOnTile(cur_tile, true)) {
-				PlaceTree(cur_tile, r);
+				PlaceTree(cur_tile, r, GetNearestTreeType(cur_tile));
 			}
 		}
 
@@ -233,7 +335,7 @@ static void PlaceTreeAtSameHeight(TileIndex tile, int height)
 		if (Delta(GetTileZ(cur_tile), height) > 2) continue;
 
 		/* Place one tree and quit */
-		PlaceTree(cur_tile, r);
+		PlaceTree(cur_tile, r, GetNearestTreeType(cur_tile));
 		break;
 	}
 }
@@ -690,8 +792,6 @@ static void TileLoop_Trees(TileIndex tile)
 							break;
 						}
 
-						TreeType treetype = GetTreeType(tile);
-
 						tile += TileOffsByDir((Direction)(Random() & 7));
 
 						/* Cacti don't spread */
@@ -699,8 +799,10 @@ static void TileLoop_Trees(TileIndex tile)
 
 						/* Don't plant trees, if ground was freshly cleared */
 						if (IsTileType(tile, MP_CLEAR) && GetClearGround(tile) == CLEAR_GRASS && GetClearDensity(tile) != 3) return;
-
-						PlantTreesOnTile(tile, treetype, 0, 0);
+						
+						TreeType tree = GetNearestTreeType(tile);
+						
+						if (tree != TREE_INVALID) PlantTreesOnTile(tile, tree, 0, 0);
 
 						break;
 					}

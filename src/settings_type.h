@@ -292,6 +292,9 @@ struct GameCreationSettings {
 	byte   min_river_length;                 ///< the minimum river length
 	byte   river_route_random;               ///< the amount of randomicity for the route finding
 	byte   amount_of_rivers;                 ///< the amount of rivers
+	byte   no_trees_height;                  ///< the height above of which no trees will be automatically planted
+	byte   evergreen_min_height;             ///< the height from which evergreen trees will be automatically planted
+	byte   tree_placer_radius;               ///< the radius for the algorithm to check for a tree and get its type
 };
 
 /** Settings related to construction in-game */
