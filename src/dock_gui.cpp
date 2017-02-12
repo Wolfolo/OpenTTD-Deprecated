@@ -389,20 +389,12 @@ Window *ShowBuildDocksScenToolbar()
 	return AllocateWindowDescFront<BuildDocksToolbarWindow>(&_build_docks_scen_toolbar_desc, TRANSPORT_WATER);
 }
 
-/** Widget numbers of the build-dock GUI. */
-enum BuildDockStationWidgets {
-	BDSW_BACKGROUND, ///< Background panel.
-	BDSW_LT_OFF,     ///< 'Off' button of coverage high light.
-	BDSW_LT_ON,      ///< 'On' button of coverage high light.
-	BDSW_INFO,       ///< 'Coverage highlight' label.
-};
-
 struct BuildDocksStationWindow : public PickerWindowBase {
 public:
 	BuildDocksStationWindow(WindowDesc *desc, Window *parent) : PickerWindowBase(desc, parent)
 	{
 		this->InitNested(TRANSPORT_WATER);
-		this->LowerWidget(_settings_client.gui.station_show_coverage + BDSW_LT_OFF);
+		this->LowerWidget(_settings_client.gui.station_show_coverage + WID_BDS_LT_OFF);
 	}
 
 	virtual ~BuildDocksStationWindow()
@@ -423,8 +415,8 @@ public:
 		}
 
 		/* strings such as 'Size' and 'Coverage Area' */
-		int top = this->GetWidget<NWidgetBase>(BDSW_LT_OFF)->pos_y + this->GetWidget<NWidgetBase>(BDSW_LT_OFF)->current_y + WD_PAR_VSEP_NORMAL;
-		NWidgetBase *back_nwi = this->GetWidget<NWidgetBase>(BDSW_BACKGROUND);
+		int top = this->GetWidget<NWidgetBase>(WID_BDS_LT_OFF)->pos_y + this->GetWidget<NWidgetBase>(WID_BDS_LT_OFF)->current_y + WD_PAR_VSEP_NORMAL;
+		NWidgetBase *back_nwi = this->GetWidget<NWidgetBase>(WID_BDS_BACKGROUND);
 		int right  = back_nwi->pos_x + back_nwi->current_x;
 		int bottom = back_nwi->pos_y + back_nwi->current_y;
 		top = DrawStationCoverageAreaText(back_nwi->pos_x + WD_FRAMERECT_LEFT, right - WD_FRAMERECT_RIGHT, top, SCT_ALL, rad, false) + WD_PAR_VSEP_NORMAL;
@@ -440,11 +432,11 @@ public:
 	virtual void OnClick(Point pt, int widget, int click_count)
 	{
 		switch (widget) {
-			case BDSW_LT_OFF:
-			case BDSW_LT_ON:
-				this->RaiseWidget(_settings_client.gui.station_show_coverage + BDSW_LT_OFF);
-				_settings_client.gui.station_show_coverage = (widget != BDSW_LT_OFF);
-				this->LowerWidget(_settings_client.gui.station_show_coverage + BDSW_LT_OFF);
+			case WID_BDS_LT_OFF:
+			case WID_BDS_LT_ON:
+				this->RaiseWidget(_settings_client.gui.station_show_coverage + WID_BDS_LT_OFF);
+				_settings_client.gui.station_show_coverage = (widget != WID_BDS_LT_OFF);
+				this->LowerWidget(_settings_client.gui.station_show_coverage + WID_BDS_LT_OFF);
 				if (_settings_client.sound.click_beep) SndPlayFx(SND_15_BEEP);
 				this->SetDirty();
 				break;
@@ -463,12 +455,12 @@ static const NWidgetPart _nested_build_dock_station_widgets[] = {
 		NWidget(WWT_CLOSEBOX, COLOUR_DARK_GREEN),
 		NWidget(WWT_CAPTION, COLOUR_DARK_GREEN), SetDataTip(STR_STATION_BUILD_DOCK_CAPTION, STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS),
 	EndContainer(),
-	NWidget(WWT_PANEL, COLOUR_DARK_GREEN, BDSW_BACKGROUND),
+	NWidget(WWT_PANEL, COLOUR_DARK_GREEN, WID_BDS_BACKGROUND),
 		NWidget(NWID_SPACER), SetMinimalSize(0, 3),
-		NWidget(WWT_LABEL, COLOUR_DARK_GREEN, BDSW_INFO), SetMinimalSize(148, 14), SetDataTip(STR_STATION_BUILD_COVERAGE_AREA_TITLE, STR_NULL),
+		NWidget(WWT_LABEL, COLOUR_DARK_GREEN, WID_BDS_INFO), SetMinimalSize(148, 14), SetDataTip(STR_STATION_BUILD_COVERAGE_AREA_TITLE, STR_NULL),
 		NWidget(NWID_HORIZONTAL), SetPIP(14, 0, 14),
-			NWidget(WWT_TEXTBTN, COLOUR_GREY, BDSW_LT_OFF), SetMinimalSize(40, 12), SetFill(1, 0), SetDataTip(STR_STATION_BUILD_COVERAGE_OFF, STR_STATION_BUILD_COVERAGE_AREA_OFF_TOOLTIP),
-			NWidget(WWT_TEXTBTN, COLOUR_GREY, BDSW_LT_ON), SetMinimalSize(40, 12), SetFill(1, 0), SetDataTip(STR_STATION_BUILD_COVERAGE_ON, STR_STATION_BUILD_COVERAGE_AREA_ON_TOOLTIP),
+			NWidget(WWT_TEXTBTN, COLOUR_GREY, WID_BDS_LT_OFF), SetMinimalSize(40, 12), SetFill(1, 0), SetDataTip(STR_STATION_BUILD_COVERAGE_OFF, STR_STATION_BUILD_COVERAGE_AREA_OFF_TOOLTIP),
+			NWidget(WWT_TEXTBTN, COLOUR_GREY, WID_BDS_LT_ON), SetMinimalSize(40, 12), SetFill(1, 0), SetDataTip(STR_STATION_BUILD_COVERAGE_ON, STR_STATION_BUILD_COVERAGE_AREA_ON_TOOLTIP),
 		EndContainer(),
 		NWidget(NWID_SPACER), SetMinimalSize(0, 20), SetResize(0, 1),
 	EndContainer(),
