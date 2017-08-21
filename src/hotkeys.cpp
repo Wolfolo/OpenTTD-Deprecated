@@ -11,6 +11,7 @@
 
 #include "stdafx.h"
 #include "openttd.h"
+#include "game_state.h"
 #include "hotkeys.h"
 #include "ini_type.h"
 #include "string_func.h"

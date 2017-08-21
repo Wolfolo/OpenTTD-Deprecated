@@ -11,6 +11,7 @@
 
 #include "stdafx.h"
 #include "openttd.h"
+#include "game_state.h"
 #include "base_media_base.h"
 #include "music/music_driver.hpp"
 #include "window_gui.h"

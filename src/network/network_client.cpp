@@ -12,6 +12,7 @@
 #ifdef ENABLE_NETWORK
 
 #include "../stdafx.h"
+#include "../game_state.h"
 #include "network_gui.h"
 #include "../saveload/saveload.h"
 #include "../saveload/saveload_filter.h"

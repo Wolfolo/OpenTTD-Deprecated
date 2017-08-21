@@ -14,6 +14,7 @@
 #ifdef ENABLE_NETWORK
 
 #include "../gfx_func.h"
+#include "../game_state.h"
 #include "../network/network.h"
 #include "../network/network_internal.h"
 #include "../console_func.h"

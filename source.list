@@ -30,6 +30,7 @@ fios.cpp
 fontcache.cpp
 fontdetection.cpp
 base_consist.cpp
+game_state.cpp
 gamelog.cpp
 genworld.cpp
 gfx.cpp
@@ -197,6 +198,7 @@ fios.h
 fontcache.h
 fontdetection.h
 base_consist.h
+game_state.h
 gamelog.h
 gamelog_internal.h
 genworld.h

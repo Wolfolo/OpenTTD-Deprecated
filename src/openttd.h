@@ -14,30 +14,6 @@
 
 #include "core/enum_type.hpp"
 
-/** Mode which defines the state of the game. */
-enum GameMode {
-	GM_MENU,
-	GM_NORMAL,
-	GM_EDITOR,
-	GM_BOOTSTRAP
-};
-
-/** Mode which defines what mode we're switching to. */
-enum SwitchMode {
-	SM_NONE,
-	SM_NEWGAME,         ///< New Game --> 'Random game'.
-	SM_RESTARTGAME,     ///< Restart --> 'Random game' with current settings.
-	SM_EDITOR,          ///< Switch to scenario editor.
-	SM_LOAD_GAME,       ///< Load game, Play Scenario.
-	SM_MENU,            ///< Switch to game intro menu.
-	SM_SAVE_GAME,       ///< Save game.
-	SM_SAVE_HEIGHTMAP,  ///< Save heightmap.
-	SM_GENRANDLAND,     ///< Generate random land within scenario editor.
-	SM_LOAD_SCENARIO,   ///< Load scenario from scenario editor.
-	SM_START_HEIGHTMAP, ///< Load a heightmap and start a new game from it.
-	SM_LOAD_HEIGHTMAP,  ///< Load heightmap from scenario editor.
-};
-
 /** Display Options */
 enum DisplayOptions {
 	DO_SHOW_TOWN_NAMES     = 0, ///< Display town names.
@@ -48,10 +24,6 @@ enum DisplayOptions {
 	DO_SHOW_WAYPOINT_NAMES = 6, ///< Display waypoint names.
 	DO_SHOW_COMPETITOR_SIGNS = 7, ///< Display signs, station names and waypoint names of opponent companies. Buoys and oilrig-stations are always shown, even if this option is turned off.
 };
-
-extern GameMode _game_mode;
-extern SwitchMode _switch_mode;
-extern bool _exit_game;
 
 /** Modes of pausing we've got */
 enum PauseMode {
@@ -77,7 +49,5 @@ void AskExitToGameMenu();
 
 int openttd_main(int argc, char *argv[]);
 void HandleExitGameRequest();
-
-void SwitchToMode(SwitchMode new_mode);
 
 #endif /* OPENTTD_H */

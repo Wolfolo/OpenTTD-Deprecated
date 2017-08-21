@@ -14,6 +14,7 @@
 
 #include "gfx_func.h"
 #include "openttd.h"
+#include "game_state.h"
 #include "core/bitmath_func.hpp"
 
 /**

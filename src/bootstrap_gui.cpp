@@ -21,6 +21,7 @@
 #include "network/network.h"
 #include "network/network_content_gui.h"
 #include "openttd.h"
+#include "game_state.h"
 #include "strings_func.h"
 #include "video/video_driver.hpp"
 #include "window_func.h"

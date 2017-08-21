@@ -351,6 +351,7 @@
     <ClCompile Include="..\src\fontcache.cpp" />
     <ClCompile Include="..\src\fontdetection.cpp" />
     <ClCompile Include="..\src\base_consist.cpp" />
+    <ClCompile Include="..\src\game_state.cpp" />
     <ClCompile Include="..\src\gamelog.cpp" />
     <ClCompile Include="..\src\genworld.cpp" />
     <ClCompile Include="..\src\gfx.cpp" />
@@ -487,6 +488,7 @@
     <ClInclude Include="..\src\fontcache.h" />
     <ClInclude Include="..\src\fontdetection.h" />
     <ClInclude Include="..\src\base_consist.h" />
+    <ClInclude Include="..\src\game_state.h" />
     <ClInclude Include="..\src\gamelog.h" />
     <ClInclude Include="..\src\gamelog_internal.h" />
     <ClInclude Include="..\src\genworld.h" />

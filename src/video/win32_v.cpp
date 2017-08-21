@@ -11,6 +11,7 @@
 
 #include "../stdafx.h"
 #include "../openttd.h"
+#include "../game_state.h"
 #include "../gfx_func.h"
 #include "../os/windows/win32.h"
 #include "../rev.h"

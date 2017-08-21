@@ -15,6 +15,7 @@
 
 #include "../../stdafx.h"
 
+#include "../../game_state.h"
 #include "../network.h"
 #include "../network_internal.h"
 #include "../../debug.h"

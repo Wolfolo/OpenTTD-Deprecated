@@ -10,6 +10,7 @@
 /** @file gfx.cpp Handling of drawing text and other gfx related stuff. */
 
 #include "stdafx.h"
+#include "game_state.h"
 #include "gfx_layout.h"
 #include "progress.h"
 #include "zoom_func.h"

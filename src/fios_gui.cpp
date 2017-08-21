@@ -10,6 +10,7 @@
 /** @file fios_gui.cpp GUIs for loading/saving games, scenarios, heightmaps, ... */
 
 #include "stdafx.h"
+#include "game_state.h"
 #include "saveload/saveload.h"
 #include "error.h"
 #include "gui.h"

@@ -556,6 +556,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\..\src\game_state.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\..\src\gamelog.cpp"
 				>
 			</File>
@@ -1101,6 +1105,10 @@
 			</File>
 			<File
 				RelativePath=".\..\src\base_consist.h"
+				>
+			</File>
+			<File
+				RelativePath=".\..\src\game_state.h"
 				>
 			</File>
 			<File
