@@ -888,7 +888,7 @@ void VehicleEnteredDepotThisTick(Vehicle *v)
  */
 static void RunVehicleDayProc()
 {
-	if (_game_mode != GM_NORMAL) return;
+	if (!GameState::GetInstance()->IsGameMode(GM_NORMAL)) return;
 
 	/* Run the day_proc for every DAY_TICKS vehicle starting at _date_fract. */
 	for (size_t i = _date_fract; i < Vehicle::GetPoolSize(); i += DAY_TICKS) {
@@ -1196,7 +1196,7 @@ void CheckVehicleBreakdown(Vehicle *v)
 
 	if (v->breakdown_ctr != 0 || (v->vehstatus & VS_STOPPED) ||
 			_settings_game.difficulty.vehicle_breakdowns < 1 ||
-			v->cur_speed < 5 || _game_mode == GM_MENU) {
+			v->cur_speed < 5 || GameState::GetInstance()->IsGameMode(GM_MENU)) {
 		return;
 	}
 

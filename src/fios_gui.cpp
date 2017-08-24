@@ -235,6 +235,7 @@ private:
 	FiosItem o_dir;
 	const FiosItem *selected;     ///< Selected game in #fios_items, or \c NULL.
 	Scrollbar *vscroll;
+	GameState *gs;
 public:
 
 	/** Generate a default save filename. */
@@ -248,6 +249,8 @@ public:
 			: Window(desc), filename_editbox(64), abstract_filetype(abstract_filetype), fop(fop)
 	{
 		assert(this->fop == SLO_SAVE || this->fop == SLO_LOAD);
+
+		this->gs = GameState::GetInstance();
 
 		/* For saving, construct an initial file name. */
 		if (this->fop == SLO_SAVE) {
@@ -300,7 +303,7 @@ public:
 
 		/* pause is only used in single-player, non-editor mode, non-menu mode. It
 		 * will be unpaused in the WE_DESTROY event handler. */
-		if (_game_mode != GM_MENU && !_networking && _game_mode != GM_EDITOR) {
+		if (!this->gs->IsGameMode(GM_MENU) && !_networking && !this->gs->IsGameMode(GM_EDITOR)) {
 			DoCommandP(0, PM_PAUSED_SAVELOAD, 1, CMD_PAUSE);
 		}
 		SetObjectToPlace(SPR_CURSOR_ZZZ, PAL_NONE, HT_NONE, WC_MAIN_WINDOW, 0);
@@ -335,7 +338,7 @@ public:
 	virtual ~SaveLoadWindow()
 	{
 		/* pause is only used in single-player, non-editor mode, non menu mode */
-		if (!_networking && _game_mode != GM_EDITOR && _game_mode != GM_MENU) {
+		if (!_networking && !this->gs->IsGameMode(GM_EDITOR) && !this->gs->IsGameMode(GM_MENU)) {
 			DoCommandP(0, PM_PAUSED_SAVELOAD, 0, CMD_PAUSE);
 		}
 	}
@@ -546,7 +549,7 @@ public:
 						ShowHeightmapLoad();
 
 					} else if (!_load_check_data.HasNewGrfs() || _load_check_data.grf_compatibility != GLC_NOT_FOUND || _settings_client.gui.UserIsAllowedToChangeNewGRFs()) {
-						_switch_mode = (_game_mode == GM_EDITOR) ? SM_LOAD_SCENARIO : SM_LOAD_GAME;
+						this->gs->SetSwitchMode(this->gs->IsGameMode(GM_EDITOR) ? SM_LOAD_SCENARIO : SM_LOAD_GAME);
 						ClearErrorMessages();
 						delete this;
 					}
@@ -667,15 +670,15 @@ public:
 			}
 		} else if (this->IsWidgetLowered(WID_SL_SAVE_GAME)) { // Save button clicked
 			if (this->abstract_filetype == FT_SAVEGAME || this->abstract_filetype == FT_SCENARIO) {
-				_switch_mode = SM_SAVE_GAME;
+				this->gs->SetSwitchMode(SM_SAVE_GAME);
 				FiosMakeSavegameName(_file_to_saveload.name, this->filename_editbox.text.buf, lastof(_file_to_saveload.name));
 			} else {
-				_switch_mode = SM_SAVE_HEIGHTMAP;
+				this->gs->SetSwitchMode(SM_SAVE_HEIGHTMAP);
 				FiosMakeHeightmapName(_file_to_saveload.name, this->filename_editbox.text.buf, lastof(_file_to_saveload.name));
 			}
 
 			/* In the editor set up the vehicle engines correctly (date might have changed) */
-			if (_game_mode == GM_EDITOR) StartupEngines();
+			if (this->gs->IsGameMode(GM_EDITOR)) StartupEngines();
 		}
 	}
 

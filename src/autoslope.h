@@ -47,7 +47,7 @@ static inline bool AutoslopeEnabled()
 {
 	return (_settings_game.construction.autoslope &&
 	        (_current_company < MAX_COMPANIES ||
-	         (_current_company == OWNER_NONE && _game_mode == GM_EDITOR)));
+	         (_current_company == OWNER_NONE && GameState::GetInstance()->IsGameMode(GM_EDITOR))));
 }
 
 #endif /* AUTOSLOPE_H */

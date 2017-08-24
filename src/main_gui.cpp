@@ -191,7 +191,7 @@ void ZoomInOrOutToCursorWindow(bool in, Window *w)
 {
 	assert(w != NULL);
 
-	if (_game_mode != GM_MENU) {
+	if (!GameState::GetInstance()->IsGameMode(GM_MENU)) {
 		ViewPort *vp = w->viewport;
 		if ((in && vp->zoom <= _settings_client.gui.zoom_min) || (!in && vp->zoom >= _settings_client.gui.zoom_max)) return;
 
@@ -271,7 +271,7 @@ struct MainWindow : Window
 	virtual void OnPaint()
 	{
 		this->DrawWidgets();
-		if (_game_mode == GM_MENU) {
+		if (GameState::GetInstance()->IsGameMode(GM_MENU)) {
 			static const SpriteID title_sprites[] = {SPR_OTTD_O, SPR_OTTD_P, SPR_OTTD_E, SPR_OTTD_N, SPR_OTTD_T, SPR_OTTD_T, SPR_OTTD_D};
 			static const uint LETTER_SPACING = 10;
 			int name_width = (lengthof(title_sprites) - 1) * LETTER_SPACING;
@@ -301,13 +301,15 @@ struct MainWindow : Window
 		 * assertions that are hard to trigger and debug */
 		if (HasModalProgress()) return ES_NOT_HANDLED;
 
+		GameState *gs = GameState::GetInstance();
+
 		switch (hotkey) {
 			case GHK_ABANDON:
 				/* No point returning from the main menu to itself */
-				if (_game_mode == GM_MENU) return ES_HANDLED;
+				if (gs->IsGameMode(GM_MENU)) return ES_HANDLED;
 				if (_settings_client.gui.autosave_on_exit) {
 					DoExitSave();
-					_switch_mode = SM_MENU;
+					gs->SetSwitchMode(SM_MENU);
 				} else {
 					AskExitToGameMenu();
 				}
@@ -326,7 +328,7 @@ struct MainWindow : Window
 				return ES_HANDLED;
 		}
 
-		if (_game_mode == GM_MENU) return ES_NOT_HANDLED;
+		if (gs->IsGameMode(GM_MENU)) return ES_NOT_HANDLED;
 
 		switch (hotkey) {
 			case GHK_CENTER:
@@ -558,7 +560,7 @@ void SetupColoursAndInitialWindow()
 	new MainWindow(&_main_window_desc);
 
 	/* XXX: these are not done */
-	switch (_game_mode) {
+	switch (GameState::GetInstance()->GetGameMode()) {
 		default: NOT_REACHED();
 		case GM_MENU:
 			ShowSelectGameWindow();
@@ -579,7 +581,7 @@ void ShowVitalWindows()
 	AllocateToolbar();
 
 	/* Status bad only for normal games */
-	if (_game_mode == GM_EDITOR) return;
+	if (GameState::GetInstance()->IsGameMode(GM_EDITOR)) return;
 
 	ShowStatusBar();
 }

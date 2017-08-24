@@ -94,11 +94,13 @@ public:
 		/* We have completed downloading. We can trigger finding the right set now. */
 		BaseGraphics::FindSets();
 
+		GameState *gs = GameState::GetInstance();
+
 		/* And continue going into the menu. */
-		_game_mode = GM_MENU;
+		gs->SetGameMode(GM_MENU);
 
 		/* _exit_game is used to break out of the outer video driver's MainLoop. */
-		_exit_game = true;
+		gs->ExitGame(true);
 		delete this;
 	}
 };
@@ -182,7 +184,7 @@ public:
 				break;
 
 			case WID_BAFD_NO:
-				_exit_game = true;
+				GameState::GetInstance()->ExitGame(true);
 				break;
 
 			default:
@@ -225,7 +227,8 @@ bool HandleBootstrap()
 	if (!_network_available) goto failure;
 
 	/* First tell the game we're bootstrapping. */
-	_game_mode = GM_BOOTSTRAP;
+	GameState *gs = GameState::GetInstance();
+	gs->SetGameMode(GM_BOOTSTRAP);
 
 	/* Initialise the freetype font code. */
 	InitializeUnicodeGlyphMap();
@@ -252,14 +255,14 @@ bool HandleBootstrap()
 	/* _exit_game is used to get out of the video driver's main loop.
 	 * In case GM_BOOTSTRAP is still set we did not exit it via the
 	 * "download complete" event, so it was a manual exit. Obey it. */
-	_exit_game = _game_mode == GM_BOOTSTRAP;
-	if (_exit_game) return false;
+	gs->ExitGame(gs->IsGameMode(GM_BOOTSTRAP));
+	if (gs->ExitGame()) return false;
 
 	/* Try to probe the graphics. Should work this time. */
 	if (!BaseGraphics::SetSet(NULL)) goto failure;
 
 	/* Finally we can continue heading for the menu. */
-	_game_mode = GM_MENU;
+	gs->SetGameMode(GM_MENU);
 	return true;
 #endif
 

@@ -264,11 +264,13 @@ static void TileLoop_Clear(TileIndex tile)
 		case LT_ARCTIC: TileLoopClearAlps(tile);   break;
 	}
 
+	GameState *gs = GameState::GetInstance();
+
 	switch (GetClearGround(tile)) {
 		case CLEAR_GRASS:
 			if (GetClearDensity(tile) == 3) return;
 
-			if (_game_mode != GM_EDITOR) {
+			if (!gs->IsGameMode(GM_EDITOR)) {
 				if (GetClearCounter(tile) < 7) {
 					AddClearCounter(tile, 1);
 					return;
@@ -284,7 +286,7 @@ static void TileLoop_Clear(TileIndex tile)
 		case CLEAR_FIELDS:
 			UpdateFences(tile);
 
-			if (_game_mode == GM_EDITOR) return;
+			if (gs->IsGameMode(GM_EDITOR)) return;
 
 			if (GetClearCounter(tile) < 7) {
 				AddClearCounter(tile, 1);

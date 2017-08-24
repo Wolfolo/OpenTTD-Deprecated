@@ -778,7 +778,7 @@ struct BuildRailToolbarWindow : Window {
  */
 static EventState RailToolbarGlobalHotkeys(int hotkey)
 {
-	if (_game_mode != GM_NORMAL || !CanBuildVehicleInfrastructure(VEH_TRAIN)) return ES_NOT_HANDLED;
+	if (!GameState::GetInstance()->IsGameMode(GM_NORMAL) || !CanBuildVehicleInfrastructure(VEH_TRAIN)) return ES_NOT_HANDLED;
 	extern RailType _last_built_railtype;
 	Window *w = ShowBuildRailToolbar(_last_built_railtype);
 	if (w == NULL) return ES_NOT_HANDLED;

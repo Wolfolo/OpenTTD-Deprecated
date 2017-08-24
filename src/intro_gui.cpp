@@ -284,7 +284,7 @@ void ShowSelectGameWindow()
 
 static void AskExitGameCallback(Window *w, bool confirmed)
 {
-	if (confirmed) _exit_game = true;
+	if (confirmed) GameState::GetInstance()->ExitGame(true);
 }
 
 void AskExitGame()
@@ -322,7 +322,7 @@ void AskExitGame()
 static void AskExitToGameMenuCallback(Window *w, bool confirmed)
 {
 	if (confirmed) {
-		_switch_mode = SM_MENU;
+		GameState::GetInstance()->SetSwitchMode(SM_MENU);
 		ClearErrorMessages();
 	}
 }
@@ -331,7 +331,7 @@ void AskExitToGameMenu()
 {
 	ShowQuery(
 		STR_ABANDON_GAME_CAPTION,
-		(_game_mode != GM_EDITOR) ? STR_ABANDON_GAME_QUERY : STR_ABANDON_SCENARIO_QUERY,
+		!GameState::GetInstance()->IsGameMode(GM_EDITOR) ? STR_ABANDON_GAME_QUERY : STR_ABANDON_SCENARIO_QUERY,
 		NULL,
 		AskExitToGameMenuCallback
 	);

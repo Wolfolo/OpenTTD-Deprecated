@@ -41,7 +41,7 @@ static SmallVector<struct TextEffect, 32> _text_effects; ///< Text effects are s
 /* Text Effects */
 TextEffectID AddTextEffect(StringID msg, int center, int y, uint8 duration, TextEffectMode mode)
 {
-	if (_game_mode == GM_MENU) return INVALID_TE_ID;
+	if (GameState::GetInstance()->IsGameMode(GM_MENU)) return INVALID_TE_ID;
 
 	TextEffectID i;
 	for (i = 0; i < _text_effects.Length(); i++) {

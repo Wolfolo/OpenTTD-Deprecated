@@ -2093,7 +2093,7 @@ struct NetworkJoinStatusWindow : Window {
 	{
 		if (widget == WID_NJS_CANCELOK) { // Disconnect button
 			NetworkDisconnect();
-			SwitchToMode(SM_MENU);
+			GameState::GetInstance()->SwitchToMode(SM_MENU);
 			ShowNetworkGameWindow();
 		}
 	}

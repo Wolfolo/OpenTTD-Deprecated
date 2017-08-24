@@ -764,12 +764,14 @@ void IniSaveWindowSettings(IniFile *ini, const char *grpname, void *desc)
  */
 bool SettingDesc::IsEditable(bool do_command) const
 {
+	GameState * gs = GameState::GetInstance();
+
 	if (!do_command && !(this->save.conv & SLF_NO_NETWORK_SYNC) && _networking && !_network_server && !(this->desc.flags & SGF_PER_COMPANY)) return false;
-	if ((this->desc.flags & SGF_NETWORK_ONLY) && !_networking && _game_mode != GM_MENU) return false;
+	if ((this->desc.flags & SGF_NETWORK_ONLY) && !_networking && !gs->IsGameMode(GM_MENU)) return false;
 	if ((this->desc.flags & SGF_NO_NETWORK) && _networking) return false;
 	if ((this->desc.flags & SGF_NEWGAME_ONLY) &&
-			(_game_mode == GM_NORMAL ||
-			(_game_mode == GM_EDITOR && !(this->desc.flags & SGF_SCENEDIT_TOO)))) return false;
+			(gs->IsGameMode(GM_NORMAL) ||
+			(gs->IsGameMode(GM_EDITOR) && !(this->desc.flags & SGF_SCENEDIT_TOO)))) return false;
 	return true;
 }
 
@@ -788,14 +790,14 @@ SettingType SettingDesc::GetType() const
 /** Reposition the main toolbar as the setting changed. */
 static bool v_PositionMainToolbar(int32 p1)
 {
-	if (_game_mode != GM_MENU) PositionMainToolbar(NULL);
+	if (!GameState::GetInstance()->IsGameMode(GM_MENU)) PositionMainToolbar(NULL);
 	return true;
 }
 
 /** Reposition the statusbar as the setting changed. */
 static bool v_PositionStatusbar(int32 p1)
 {
-	if (_game_mode != GM_MENU) {
+	if (!GameState::GetInstance()->IsGameMode(GM_MENU)) {
 		PositionStatusbar(NULL);
 		PositionNewsMessage(NULL);
 		PositionNetworkChatWindow(NULL);
@@ -883,7 +885,7 @@ static bool CheckInterval(int32 p1)
 {
 	bool update_vehicles;
 	VehicleDefaultSettings *vds;
-	if (_game_mode == GM_MENU || !Company::IsValidID(_current_company)) {
+	if (GameState::GetInstance()->IsGameMode(GM_MENU) || !Company::IsValidID(_current_company)) {
 		vds = &_settings_client.company.vehicle;
 		update_vehicles = false;
 	} else {
@@ -923,7 +925,7 @@ static bool UpdateInterval(VehicleType type, int32 p1)
 {
 	bool update_vehicles;
 	VehicleDefaultSettings *vds;
-	if (_game_mode == GM_MENU || !Company::IsValidID(_current_company)) {
+	if (GameState::GetInstance()->IsGameMode(GM_MENU) || !Company::IsValidID(_current_company)) {
 		vds = &_settings_client.company.vehicle;
 		update_vehicles = false;
 	} else {
@@ -1050,7 +1052,7 @@ static bool DragSignalsDensityChanged(int32)
 
 static bool TownFoundingChanged(int32 p1)
 {
-	if (_game_mode != GM_EDITOR && _settings_game.economy.found_town == TF_FORBIDDEN) {
+	if (!GameState::GetInstance()->IsGameMode(GM_EDITOR) && _settings_game.economy.found_town == TF_FORBIDDEN) {
 		DeleteWindowById(WC_FOUND_TOWN, 0);
 		return true;
 	}
@@ -1156,7 +1158,7 @@ static void ValidateSettings()
 
 static bool DifficultyNoiseChange(int32 i)
 {
-	if (_game_mode == GM_NORMAL) {
+	if (GameState::GetInstance()->IsGameMode(GM_NORMAL)) {
 		UpdateAirportsNoise();
 		if (_settings_game.economy.station_noise_level) {
 			InvalidateWindowClassesData(WC_TOWN_VIEW, 0);
@@ -1185,7 +1187,7 @@ static bool MaxNoAIsChange(int32 i)
 static bool CheckRoadSide(int p1)
 {
 	extern bool RoadVehiclesAreBuilt();
-	return _game_mode == GM_MENU || !RoadVehiclesAreBuilt();
+	return GameState::GetInstance()->IsGameMode(GM_MENU) || !RoadVehiclesAreBuilt();
 }
 
 /**
@@ -1203,7 +1205,7 @@ static size_t ConvertLandscape(const char *value)
 
 static bool CheckFreeformEdges(int32 p1)
 {
-	if (_game_mode == GM_MENU) return true;
+	if (GameState::GetInstance()->IsGameMode(GM_MENU)) return true;
 	if (p1 != 0) {
 		Ship *s;
 		FOR_ALL_SHIPS(s) {
@@ -1268,7 +1270,7 @@ static bool CheckFreeformEdges(int32 p1)
  */
 static bool ChangeDynamicEngines(int32 p1)
 {
-	if (_game_mode == GM_MENU) return true;
+	if (GameState::GetInstance()->IsGameMode(GM_MENU)) return true;
 
 	if (!EngineOverrideManager::ResetToCurrentNewGRFConfig()) {
 		ShowErrorMessage(STR_CONFIG_SETTING_DYNAMIC_ENGINES_EXISTING_VEHICLES, INVALID_STRING_ID, WL_ERROR);
@@ -1280,8 +1282,8 @@ static bool ChangeDynamicEngines(int32 p1)
 
 static bool ChangeMaxHeightLevel(int32 p1)
 {
-	if (_game_mode == GM_NORMAL) return false;
-	if (_game_mode != GM_EDITOR) return true;
+	if (GameState::GetInstance()->IsGameMode(GM_NORMAL)) return false;
+	if (!GameState::GetInstance()->IsGameMode(GM_EDITOR)) return true;
 
 	/* Check if at least one mountain on the map is higher than the new value.
 	 * If yes, disallow the change. */
@@ -1927,7 +1929,7 @@ bool SetSettingValue(uint index, int32 value, bool force_newgame)
 		void *var = GetVariableAddress(&GetGameSettings(), &sd->save);
 		Write_ValidateSetting(var, sd, value);
 
-		if (_game_mode != GM_MENU) {
+		if (!GameState::GetInstance()->IsGameMode(GM_MENU)) {
 			void *var2 = GetVariableAddress(&_settings_newgame, &sd->save);
 			Write_ValidateSetting(var2, sd, value);
 		}
@@ -1960,7 +1962,7 @@ bool SetSettingValue(uint index, int32 value, bool force_newgame)
 void SetCompanySetting(uint index, int32 value)
 {
 	const SettingDesc *sd = &_company_settings[index];
-	if (Company::IsValidID(_local_company) && _game_mode != GM_MENU) {
+	if (Company::IsValidID(_local_company) && !GameState::GetInstance()->IsGameMode(GM_MENU)) {
 		DoCommandP(0, index, value, CMD_CHANGE_COMPANY_SETTING);
 	} else {
 		void *var = GetVariableAddress(&_settings_client.company, &sd->save);
@@ -2026,7 +2028,7 @@ bool SetSettingValue(uint index, const char *value, bool force_newgame)
 	assert(sd->save.conv & SLF_NO_NETWORK_SYNC);
 
 	if (GetVarMemType(sd->save.conv) == SLE_VAR_STRQ) {
-		char **var = (char**)GetVariableAddress((_game_mode == GM_MENU || force_newgame) ? &_settings_newgame : &_settings_game, &sd->save);
+		char **var = (char**)GetVariableAddress((GameState::GetInstance()->IsGameMode(GM_MENU) || force_newgame) ? &_settings_newgame : &_settings_game, &sd->save);
 		free(*var);
 		*var = strcmp(value, "(null)") == 0 ? NULL : stredup(value);
 	} else {
@@ -2136,7 +2138,7 @@ void IConsoleGetSetting(const char *name, bool force_newgame)
 		return;
 	}
 
-	ptr = GetVariableAddress((_game_mode == GM_MENU || force_newgame) ? &_settings_newgame : &_settings_game, &sd->save);
+	ptr = GetVariableAddress((GameState::GetInstance()->IsGameMode(GM_MENU) || force_newgame) ? &_settings_newgame : &_settings_game, &sd->save);
 
 	if (sd->desc.cmd == SDT_STRING) {
 		IConsolePrintF(CC_WARNING, "Current value for '%s' is: '%s'", name, (GetVarMemType(sd->save.conv) == SLE_VAR_STRQ) ? *(const char * const *)ptr : (const char *)ptr);

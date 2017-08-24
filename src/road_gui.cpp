@@ -405,6 +405,7 @@ struct BuildRoadToolbarWindow : Window {
 
 	virtual void OnClick(Point pt, int widget, int click_count)
 	{
+		GameState *gs = GameState::GetInstance();
 		_remove_button_clicked = false;
 		_one_way_button_clicked = false;
 		switch (widget) {
@@ -429,7 +430,7 @@ struct BuildRoadToolbarWindow : Window {
 				break;
 
 			case WID_ROT_DEPOT:
-				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(VEH_ROAD)) return;
+				if (gs->IsGameMode(GM_EDITOR) || !CanBuildVehicleInfrastructure(VEH_ROAD)) return;
 				if (HandlePlacePushButton(this, WID_ROT_DEPOT, SPR_CURSOR_ROAD_DEPOT, HT_RECT)) {
 					ShowRoadDepotPicker(this);
 					this->last_started_action = widget;
@@ -437,7 +438,7 @@ struct BuildRoadToolbarWindow : Window {
 				break;
 
 			case WID_ROT_BUS_STATION:
-				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(VEH_ROAD)) return;
+				if (gs->IsGameMode(GM_EDITOR) || !CanBuildVehicleInfrastructure(VEH_ROAD)) return;
 				if (HandlePlacePushButton(this, WID_ROT_BUS_STATION, SPR_CURSOR_BUS_STATION, HT_RECT)) {
 					ShowRVStationPicker(this, ROADSTOP_BUS);
 					this->last_started_action = widget;
@@ -445,7 +446,7 @@ struct BuildRoadToolbarWindow : Window {
 				break;
 
 			case WID_ROT_TRUCK_STATION:
-				if (_game_mode == GM_EDITOR || !CanBuildVehicleInfrastructure(VEH_ROAD)) return;
+				if (gs->IsGameMode(GM_EDITOR) || !CanBuildVehicleInfrastructure(VEH_ROAD)) return;
 				if (HandlePlacePushButton(this, WID_ROT_TRUCK_STATION, SPR_CURSOR_TRUCK_STATION, HT_RECT)) {
 					ShowRVStationPicker(this, ROADSTOP_TRUCK);
 					this->last_started_action = widget;
@@ -678,7 +679,7 @@ struct BuildRoadToolbarWindow : Window {
 static EventState RoadToolbarGlobalHotkeys(int hotkey)
 {
 	Window *w = NULL;
-	switch (_game_mode) {
+	switch (GameState::GetInstance()->GetGameMode()) {
 		case GM_NORMAL: {
 			extern RoadType _last_built_roadtype;
 			w = ShowBuildRoadToolbar(_last_built_roadtype);

@@ -115,7 +115,7 @@ static Foundation GetRoadFoundation(Slope tileh, RoadBits bits);
  */
 CommandCost CheckAllowRemoveRoad(TileIndex tile, RoadBits remove, Owner owner, RoadType rt, DoCommandFlag flags, bool town_check)
 {
-	if (_game_mode == GM_EDITOR || remove == ROAD_NONE) return CommandCost();
+	if (GameState::GetInstance()->IsGameMode(GM_EDITOR) || remove == ROAD_NONE) return CommandCost();
 
 	/* Water can always flood and towns can always remove "normal" road pieces.
 	 * Towns are not be allowed to remove non "normal" road pieces, like tram
@@ -1335,6 +1335,7 @@ static void DrawTile_Road(TileInfo *ti)
 
 			PaletteID pal = PAL_NONE;
 			const RailtypeInfo *rti = GetRailTypeInfo(GetRailType(ti->tile));
+			GameState *gs = GameState::GetInstance();
 
 			if (rti->UsesOverlay()) {
 				Axis axis = GetCrossingRailAxis(ti->tile);
@@ -1356,7 +1357,7 @@ static void DrawTile_Road(TileInfo *ti)
 
 				SpriteID rail = GetCustomRailSprite(rti, ti->tile, RTSG_CROSSING) + axis;
 				/* Draw tracks, but draw PBS reserved tracks darker. */
-				pal = (_game_mode != GM_MENU && _settings_client.gui.show_track_reservation && HasCrossingReservation(ti->tile)) ? PALETTE_CRASH : PAL_NONE;
+				pal = (!gs->IsGameMode(GM_MENU) && _settings_client.gui.show_track_reservation && HasCrossingReservation(ti->tile)) ? PALETTE_CRASH : PAL_NONE;
 				DrawGroundSprite(rail, pal);
 
 				DrawRailTileSeq(ti, &_crossing_layout, TO_CATENARY, rail, 0, PAL_NONE);
@@ -1381,7 +1382,7 @@ static void DrawTile_Road(TileInfo *ti)
 				DrawGroundSprite(image, pal);
 
 				/* PBS debugging, draw reserved tracks darker */
-				if (_game_mode != GM_MENU && _settings_client.gui.show_track_reservation && HasCrossingReservation(ti->tile)) {
+				if (!gs->IsGameMode(GM_MENU) && _settings_client.gui.show_track_reservation && HasCrossingReservation(ti->tile)) {
 					DrawGroundSprite(GetCrossingRoadAxis(ti->tile) == AXIS_Y ? GetRailTypeInfo(GetRailType(ti->tile))->base_sprites.single_x : GetRailTypeInfo(GetRailType(ti->tile))->base_sprites.single_y, PALETTE_CRASH);
 				}
 			}

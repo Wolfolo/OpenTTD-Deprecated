@@ -43,9 +43,6 @@ bool _right_button_down;    ///< Is right mouse button pressed?
 bool _right_button_clicked; ///< Is right mouse button clicked?
 DrawPixelInfo _screen;
 bool _screen_disable_anim = false;   ///< Disable palette animation (important for 32bpp-anim blitter during giant screenshot)
-bool _exit_game;
-GameMode _game_mode;
-SwitchMode _switch_mode;  ///< The next mainloop command.
 PauseModeByte _pause_mode;
 Palette _cur_palette;
 
@@ -1329,7 +1326,7 @@ void DrawDirtyBlocks()
 		 * Simply let the next run do so, otherwise we would be loading
 		 * the new state (and possibly change the blitter) when we hold
 		 * the drawing lock, which we must not do. */
-		if (_switch_mode != SM_NONE && !HasModalProgress()) return;
+		if (!GameState::GetInstance()->IsSwitchMode(SM_NONE) && !HasModalProgress()) return;
 	}
 
 	y = 0;

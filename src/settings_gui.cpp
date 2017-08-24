@@ -121,7 +121,7 @@ static DropDownList *BuiltSetDropDownList(int *selected_index)
 
 	DropDownList *list = new DropDownList();
 	for (int i = 0; i < n; i++) {
-		*list->Append() = new DropDownListCharStringItem(T::GetSet(i)->name, i, (_game_mode == GM_MENU) ? false : (*selected_index != i));
+		*list->Append() = new DropDownListCharStringItem(T::GetSet(i)->name, i, GameState::GetInstance()->IsGameMode(GM_MENU) ? false : (*selected_index != i));
 	}
 
 	return list;
@@ -177,7 +177,7 @@ struct GameOptionsWindow : Window {
 	~GameOptionsWindow()
 	{
 		DeleteWindowById(WC_CUSTOM_CURRENCY, 0);
-		if (this->reload) _switch_mode = SM_MENU;
+		if (this->reload) GameState::GetInstance()->SetSwitchMode(SM_MENU);
 	}
 
 	/**
@@ -188,13 +188,14 @@ struct GameOptionsWindow : Window {
 	 */
 	DropDownList *BuildDropDownList(int widget, int *selected_index) const
 	{
+		GameState *gs = GameState::GetInstance();
 		DropDownList *list = NULL;
 		switch (widget) {
 			case WID_GO_CURRENCY_DROPDOWN: { // Setup currencies dropdown
 				list = new DropDownList();
 				*selected_index = this->opt->locale.currency;
 				StringID *items = BuildCurrencyDropdown();
-				uint64 disabled = _game_mode == GM_MENU ? 0LL : ~GetMaskOfAllowedCurrencies();
+				uint64 disabled = gs->IsGameMode(GM_MENU) ? 0LL : ~GetMaskOfAllowedCurrencies();
 
 				/* Add non-custom currencies; sorted naturally */
 				for (uint i = 0; i < CURRENCY_END; items++, i++) {
@@ -218,7 +219,7 @@ struct GameOptionsWindow : Window {
 				/* You can only change the drive side if you are in the menu or ingame with
 				 * no vehicles present. In a networking game only the server can change it */
 				extern bool RoadVehiclesAreBuilt();
-				if ((_game_mode != GM_MENU && RoadVehiclesAreBuilt()) || (_networking && !_network_server)) {
+				if ((!gs->IsGameMode(GM_MENU) && RoadVehiclesAreBuilt()) || (_networking && !_network_server)) {
 					disabled = ~(1 << this->opt->vehicle.road_side); // disable the other value
 				}
 
@@ -232,7 +233,7 @@ struct GameOptionsWindow : Window {
 				list = new DropDownList();
 				*selected_index = this->opt->game_creation.town_name;
 
-				int enabled_item = (_game_mode == GM_MENU || Town::GetNumItems() == 0) ? -1 : *selected_index;
+				int enabled_item = (gs->IsGameMode(GM_MENU) || Town::GetNumItems() == 0) ? -1 : *selected_index;
 
 				/* Add and sort newgrf townnames generators */
 				for (int i = 0; i < _nb_grf_names; i++) {
@@ -471,7 +472,7 @@ struct GameOptionsWindow : Window {
 	template <class T>
 	void SetMediaSet(int index)
 	{
-		if (_game_mode == GM_MENU) {
+		if (GameState::GetInstance()->IsGameMode(GM_MENU)) {
 			const char *name = T::GetSet(index)->name;
 
 			free(T::ini_set);
@@ -502,7 +503,7 @@ struct GameOptionsWindow : Window {
 				break;
 
 			case WID_GO_TOWNNAME_DROPDOWN: // Town names
-				if (_game_mode == GM_MENU || Town::GetNumItems() == 0) {
+				if (GameState::GetInstance()->IsGameMode(GM_MENU) || Town::GetNumItems() == 0) {
 					this->opt->game_creation.town_name = index;
 					SetWindowDirty(WC_GAME_OPTIONS, WN_GAME_OPTIONS_GAME_OPTIONS);
 				}
@@ -1067,7 +1068,7 @@ bool SettingEntry::UpdateFilterState(SettingFilter &filter, bool force_visible)
 static const void *ResolveVariableAddress(const GameSettings *settings_ptr, const SettingDesc *sd)
 {
 	if ((sd->desc.flags & SGF_PER_COMPANY) != 0) {
-		if (Company::IsValidID(_local_company) && _game_mode != GM_MENU) {
+		if (Company::IsValidID(_local_company) && !GameState::GetInstance()->IsGameMode(GM_MENU)) {
 			return GetVariableAddress(&Company::Get(_local_company)->settings, &sd->save);
 		} else {
 			return GetVariableAddress(&_settings_client.company, &sd->save);
@@ -1904,9 +1905,10 @@ struct GameSettingsWindow : Window {
 				break;
 
 			case WID_GS_TYPE_DROPDOWN:
+				GameState *gs = GameState::GetInstance();
 				switch (this->filter.type) {
-					case ST_GAME:    SetDParam(0, _game_mode == GM_MENU ? STR_CONFIG_SETTING_TYPE_DROPDOWN_GAME_MENU : STR_CONFIG_SETTING_TYPE_DROPDOWN_GAME_INGAME); break;
-					case ST_COMPANY: SetDParam(0, _game_mode == GM_MENU ? STR_CONFIG_SETTING_TYPE_DROPDOWN_COMPANY_MENU : STR_CONFIG_SETTING_TYPE_DROPDOWN_COMPANY_INGAME); break;
+					case ST_GAME:    SetDParam(0, gs->IsGameMode(GM_MENU) ? STR_CONFIG_SETTING_TYPE_DROPDOWN_GAME_MENU : STR_CONFIG_SETTING_TYPE_DROPDOWN_GAME_INGAME); break;
+					case ST_COMPANY: SetDParam(0, gs->IsGameMode(GM_MENU) ? STR_CONFIG_SETTING_TYPE_DROPDOWN_COMPANY_MENU : STR_CONFIG_SETTING_TYPE_DROPDOWN_COMPANY_INGAME); break;
 					case ST_CLIENT:  SetDParam(0, STR_CONFIG_SETTING_TYPE_DROPDOWN_CLIENT); break;
 					default:         SetDParam(0, STR_CONFIG_SETTING_TYPE_DROPDOWN_ALL); break;
 				}
@@ -1931,10 +1933,11 @@ struct GameSettingsWindow : Window {
 				break;
 
 			case WID_GS_TYPE_DROPDOWN:
+				GameState *gs = GameState::GetInstance();
 				list = new DropDownList();
 				*list->Append() = new DropDownListStringItem(STR_CONFIG_SETTING_TYPE_DROPDOWN_ALL, ST_ALL, false);
-				*list->Append() = new DropDownListStringItem(_game_mode == GM_MENU ? STR_CONFIG_SETTING_TYPE_DROPDOWN_GAME_MENU : STR_CONFIG_SETTING_TYPE_DROPDOWN_GAME_INGAME, ST_GAME, false);
-				*list->Append() = new DropDownListStringItem(_game_mode == GM_MENU ? STR_CONFIG_SETTING_TYPE_DROPDOWN_COMPANY_MENU : STR_CONFIG_SETTING_TYPE_DROPDOWN_COMPANY_INGAME, ST_COMPANY, false);
+				*list->Append() = new DropDownListStringItem(gs->IsGameMode(GM_MENU) ? STR_CONFIG_SETTING_TYPE_DROPDOWN_GAME_MENU : STR_CONFIG_SETTING_TYPE_DROPDOWN_GAME_INGAME, ST_GAME, false);
+				*list->Append() = new DropDownListStringItem(gs->IsGameMode(GM_MENU) ? STR_CONFIG_SETTING_TYPE_DROPDOWN_COMPANY_MENU : STR_CONFIG_SETTING_TYPE_DROPDOWN_COMPANY_INGAME, ST_COMPANY, false);
 				*list->Append() = new DropDownListStringItem(STR_CONFIG_SETTING_TYPE_DROPDOWN_CLIENT, ST_CLIENT, false);
 				break;
 		}
@@ -1956,12 +1959,13 @@ struct GameSettingsWindow : Window {
 			case WID_GS_HELP_TEXT:
 				if (this->last_clicked != NULL) {
 					const SettingDesc *sd = this->last_clicked->setting;
+					GameState *gs = GameState::GetInstance();
 
 					int y = r.top;
 					switch (sd->GetType()) {
-						case ST_COMPANY: SetDParam(0, _game_mode == GM_MENU ? STR_CONFIG_SETTING_TYPE_COMPANY_MENU : STR_CONFIG_SETTING_TYPE_COMPANY_INGAME); break;
+						case ST_COMPANY: SetDParam(0, gs->IsGameMode(GM_MENU) ? STR_CONFIG_SETTING_TYPE_COMPANY_MENU : STR_CONFIG_SETTING_TYPE_COMPANY_INGAME); break;
 						case ST_CLIENT:  SetDParam(0, STR_CONFIG_SETTING_TYPE_CLIENT); break;
-						case ST_GAME:    SetDParam(0, _game_mode == GM_MENU ? STR_CONFIG_SETTING_TYPE_GAME_MENU : STR_CONFIG_SETTING_TYPE_GAME_INGAME); break;
+						case ST_GAME:    SetDParam(0, gs->IsGameMode(GM_MENU) ? STR_CONFIG_SETTING_TYPE_GAME_MENU : STR_CONFIG_SETTING_TYPE_GAME_INGAME); break;
 						default: NOT_REACHED();
 					}
 					DrawString(r.left, r.right, y, STR_CONFIG_SETTING_TYPE);

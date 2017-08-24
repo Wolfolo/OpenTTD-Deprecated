@@ -596,7 +596,7 @@ static WindowDesc _town_editor_view_desc(
 
 void ShowTownViewWindow(TownID town)
 {
-	if (_game_mode == GM_EDITOR) {
+	if (GameState::GetInstance()->IsGameMode(GM_EDITOR)) {
 		AllocateWindowDescFront<TownViewWindow>(&_town_editor_view_desc, town);
 	} else {
 		AllocateWindowDescFront<TownViewWindow>(&_town_game_view_desc, town);
@@ -772,7 +772,7 @@ public:
 					assert(t->xy != INVALID_TILE);
 
 					/* Draw rating icon. */
-					if (_game_mode == GM_EDITOR || !HasBit(t->have_ratings, _local_company)) {
+					if (GameState::GetInstance()->IsGameMode(GM_EDITOR) || !HasBit(t->have_ratings, _local_company)) {
 						DrawSprite(SPR_TOWN_RATING_NA, PAL_NONE, icon_x, y + (this->resize.step_height - icon_size.height) / 2);
 					} else {
 						SpriteID icon = SPR_TOWN_RATING_APALLING;
@@ -1078,7 +1078,7 @@ public:
 
 	void UpdateButtons(bool check_availability)
 	{
-		if (check_availability && _game_mode != GM_EDITOR) {
+		if (check_availability && !GameState::GetInstance()->IsGameMode(GM_EDITOR)) {
 			this->SetWidgetsDisabledState(true, WID_TF_RANDOM_TOWN, WID_TF_MANY_RANDOM_TOWNS, WID_TF_SIZE_LARGE, WIDGET_LIST_END);
 			this->SetWidgetsDisabledState(_settings_game.economy.found_town != TF_CUSTOM_LAYOUT,
 					WID_TF_LAYOUT_ORIGINAL, WID_TF_LAYOUT_BETTER, WID_TF_LAYOUT_GRID2, WID_TF_LAYOUT_GRID3, WID_TF_LAYOUT_RANDOM, WIDGET_LIST_END);
@@ -1195,6 +1195,6 @@ static WindowDesc _found_town_desc(
 
 void ShowFoundTownWindow()
 {
-	if (_game_mode != GM_EDITOR && !Company::IsValidID(_local_company)) return;
+	if (!GameState::GetInstance()->IsGameMode(GM_EDITOR) && !Company::IsValidID(_local_company)) return;
 	AllocateWindowDescFront<FoundTownWindow>(&_found_town_desc, 0);
 }

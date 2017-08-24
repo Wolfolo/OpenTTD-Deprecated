@@ -50,7 +50,7 @@ extern byte _display_opt;
  */
 static inline bool IsTransparencySet(TransparencyOption to)
 {
-	return (HasBit(_transparency_opt, to) && _game_mode != GM_MENU);
+	return (HasBit(_transparency_opt, to) && !GameState::GetInstance()->IsGameMode(GM_MENU));
 }
 
 /**
@@ -61,7 +61,7 @@ static inline bool IsTransparencySet(TransparencyOption to)
  */
 static inline bool IsInvisibilitySet(TransparencyOption to)
 {
-	return (HasBit(_transparency_opt & _invisibility_opt, to) && _game_mode != GM_MENU);
+	return (HasBit(_transparency_opt & _invisibility_opt, to) && !GameState::GetInstance()->IsGameMode(GM_MENU));
 }
 
 /**

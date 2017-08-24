@@ -242,7 +242,7 @@ static void FiosMakeFilename(char *buf, const char *path, const char *name, cons
  */
 void FiosMakeSavegameName(char *buf, const char *name, const char *last)
 {
-	const char *extension = (_game_mode == GM_EDITOR) ? ".scn" : ".sav";
+	const char *extension = (GameState::GetInstance()->IsGameMode(GM_EDITOR)) ? ".scn" : ".sav";
 
 	FiosMakeFilename(buf, _fios_path, name, extension, last);
 }

@@ -573,7 +573,7 @@ static ThreadObject *_save_thread;                    ///< The thread we're usin
  */
 static void SetAsyncSaveFinish(AsyncSaveFinishProc proc)
 {
-	if (_exit_game) return;
+	if (GameState::GetInstance()->ExitGame()) return;
 	while (_async_save_finish != NULL) CSleep(10);
 
 	_async_save_finish = proc;
@@ -2478,7 +2478,7 @@ static void SaveFileStart()
 /** Update the gui accordingly when saving is done and release locks on saveload. */
 static void SaveFileDone()
 {
-	if (_game_mode != GM_MENU) _fast_forward = _sl.ff_state;
+	if (!GameState::GetInstance()->IsGameMode(GM_MENU)) _fast_forward = _sl.ff_state;
 	SetMouseCursorBusy(false);
 
 	InvalidateWindowData(WC_STATUS_BAR, 0, SBI_SAVELOAD_FINISH);

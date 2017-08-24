@@ -218,7 +218,7 @@ static void SelectSongToPlay()
 	} while (_playlists[_settings_client.music.playlist][++i] != 0 && j < lengthof(_cur_playlist) - 1);
 
 	/* Do not shuffle when on the intro-start window, as the song to play has to be the original TTD Theme*/
-	if (_settings_client.music.shuffle && _game_mode != GM_MENU) {
+	if (_settings_client.music.shuffle && !GameState::GetInstance()->IsGameMode(GM_MENU)) {
 		i = 500;
 		do {
 			uint32 r = InteractiveRandom();
@@ -280,7 +280,7 @@ void MusicLoop()
 	if (!_song_is_active) return;
 
 	if (!MusicDriver::GetInstance()->IsSongPlaying()) {
-		if (_game_mode != GM_MENU) {
+		if (!GameState::GetInstance()->IsGameMode(GM_MENU)) {
 			StopMusic();
 			SkipToNextSong();
 			PlayPlaylistSong();

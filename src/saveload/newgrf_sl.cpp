@@ -96,7 +96,7 @@ static void Load_NGRF()
 {
 	Load_NGRF_common(_grfconfig);
 
-	if (_game_mode == GM_MENU) {
+	if (GameState::GetInstance()->IsGameMode(GM_MENU)) {
 		/* Intro game must not have NewGRF. */
 		if (_grfconfig != NULL) SlErrorCorrupt("The intro game must not use NewGRF");
 

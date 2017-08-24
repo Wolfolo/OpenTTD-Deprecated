@@ -38,7 +38,7 @@ ScriptConfigItem _start_date_config = {
 /* static */ AIConfig *AIConfig::GetConfig(CompanyID company, ScriptSettingSource source)
 {
 	AIConfig **config;
-	if (source == SSS_FORCE_NEWGAME || (source == SSS_DEFAULT && _game_mode == GM_MENU)) {
+	if (source == SSS_FORCE_NEWGAME || (source == SSS_DEFAULT && GameState::GetInstance()->IsGameMode(GM_MENU))) {
 		config = &_settings_newgame.ai_config[company];
 	} else {
 		config = &_settings_game.ai_config[company];

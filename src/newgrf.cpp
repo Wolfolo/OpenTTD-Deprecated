@@ -5770,7 +5770,7 @@ bool GetGlobalVariable(byte param, uint32 *value, const GRFFile *grffile)
 			return true;
 
 		case 0x12: // Game mode
-			*value = _game_mode;
+			*value = GameState::GetInstance()->GetGameMode();
 			return true;
 
 		/* case 0x13: // Tile refresh offset to left    not implemented */

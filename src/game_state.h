@@ -36,10 +36,52 @@ enum SwitchMode {
 	SM_LOAD_HEIGHTMAP,  ///< Load heightmap from scenario editor.
 };
 
-extern GameMode _game_mode;
-extern SwitchMode _switch_mode;
-extern bool _exit_game;
+/**
+ * Singleton class for handling the current state of the game
+ */
+class GameState {
+public:
+	static GameState *GetInstance()
+	{
+		if (!instance) {
+			instance = new GameState();
+		}
 
-void SwitchToMode(SwitchMode new_mode);
+		return instance;
+	}
+
+	virtual ~GameState()
+	{
+		delete instance;
+	}
+
+	/* Public accessors */
+	virtual bool IsGameMode(GameMode mode);
+	virtual void SetGameMode(GameMode new_mode);
+	virtual void RestoreGameMode();
+	virtual GameMode GetGameMode();
+	virtual GameMode GetOldGameMode();
+
+	virtual bool IsSwitchMode(SwitchMode mode);
+	virtual void SetSwitchMode(SwitchMode new_mode);
+	virtual void SwitchToMode(SwitchMode new_mode);
+	virtual SwitchMode GetSwitchMode();
+
+	virtual void ExitGame(bool exit);
+	virtual bool ExitGame();
+
+private:
+	static GameState *instance;
+
+	GameState() {}
+	GameState(GameState const&);
+	GameState &operator=(const GameState&);
+
+	GameMode game_mode = GM_BOOTSTRAP;
+	GameMode old_game_mode = GM_BOOTSTRAP;
+	SwitchMode switch_mode = SM_NONE;
+
+	bool exit_game = false;
+};
 
 #endif /* GAME_STATE_H */

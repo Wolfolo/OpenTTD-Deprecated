@@ -396,13 +396,15 @@ CommandCost CmdBuildCanal(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 	WaterClass wc = Extract<WaterClass, 0, 2>(p2);
 	if (p1 >= MapSize() || wc == WATER_CLASS_INVALID) return CMD_ERROR;
 
+	GameState *gs = GameState::GetInstance();
+
 	/* Outside of the editor you can only build canals, not oceans */
-	if (wc != WATER_CLASS_CANAL && _game_mode != GM_EDITOR) return CMD_ERROR;
+	if (wc != WATER_CLASS_CANAL && !gs->IsGameMode(GM_EDITOR)) return CMD_ERROR;
 
 	TileArea ta(tile, p1);
 
 	/* Outside the editor you can only drag canals, and not areas */
-	if (_game_mode != GM_EDITOR && ta.w != 1 && ta.h != 1) return CMD_ERROR;
+	if (!gs->IsGameMode(GM_EDITOR) && ta.w != 1 && ta.h != 1) return CMD_ERROR;
 
 	CommandCost cost(EXPENSES_CONSTRUCTION);
 	TILE_AREA_LOOP(tile, ta) {
@@ -426,7 +428,7 @@ CommandCost CmdBuildCanal(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
 			switch (wc) {
 				case WATER_CLASS_RIVER:
 					MakeRiver(tile, Random());
-					if (_game_mode == GM_EDITOR) {
+					if (gs->IsGameMode(GM_EDITOR)) {
 						TileIndex tile2 = tile;
 						CircularTileSearch(&tile2, 5, RiverModifyDesertZone, NULL);
 					}

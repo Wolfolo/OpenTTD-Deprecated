@@ -79,7 +79,7 @@ static void CleanupGeneration()
 
 	SetMouseCursorBusy(false);
 	/* Show all vital windows again, because we have hidden them */
-	if (_gw.threaded && _game_mode != GM_MENU) ShowVitalWindows();
+	if (_gw.threaded && !GameState::GetInstance()->IsGameMode(GM_MENU)) ShowVitalWindows();
 	SetModalProgress(false);
 	_gw.proc     = NULL;
 	_gw.abortp   = NULL;
@@ -114,6 +114,8 @@ static void _GenerateWorld(void *)
 		/* Must start economy early because of the costs. */
 		StartupEconomy();
 
+		GameState *gs = GameState::GetInstance();
+
 		/* Don't generate landscape items when in the scenario editor. */
 		if (_gw.mode == GWM_EMPTY) {
 			SetGeneratingWorldProgress(GWP_OBJECT, 1);
@@ -125,7 +127,7 @@ static void _GenerateWorld(void *)
 			}
 
 			/* Make the map the height of the setting */
-			if (_game_mode != GM_MENU) FlatEmptyWorld(_settings_game.game_creation.se_flat_world_height);
+			if (!gs->IsGameMode(GM_MENU)) FlatEmptyWorld(_settings_game.game_creation.se_flat_world_height);
 
 			ConvertGroundTilesIntoWaterTiles();
 			IncreaseGeneratingWorldProgress(GWP_OBJECT);
@@ -134,7 +136,7 @@ static void _GenerateWorld(void *)
 			GenerateClearTile();
 
 			/* only generate towns, tree and industries in newgame mode. */
-			if (_game_mode != GM_EDITOR) {
+			if (!gs->IsGameMode(GM_EDITOR)) {
 				if (!GenerateTowns(_settings_game.economy.town_layout)) {
 					_cur_company.Restore();
 					HandleGeneratingWorldAbortion();
@@ -166,7 +168,7 @@ static void _GenerateWorld(void *)
 				IncreaseGeneratingWorldProgress(GWP_RUNTILELOOP);
 			}
 
-			if (_game_mode != GM_EDITOR) {
+			if (!gs->IsGameMode(GM_EDITOR)) {
 				Game::StartNew();
 
 				if (Game::GetInstance() != NULL) {
@@ -276,8 +278,10 @@ bool IsGeneratingWorldAborted()
  */
 void HandleGeneratingWorldAbortion()
 {
+	GameState *gs = GameState::GetInstance();
+
 	/* Clean up - in SE create an empty map, otherwise, go to intro menu */
-	_switch_mode = (_game_mode == GM_EDITOR) ? SM_EDITOR : SM_MENU;
+	gs->SetSwitchMode(gs->IsGameMode(GM_EDITOR) ? SM_EDITOR : SM_MENU);
 
 	if (_gw.abortp != NULL) _gw.abortp();
 
@@ -285,7 +289,7 @@ void HandleGeneratingWorldAbortion()
 
 	if (_gw.thread != NULL) _gw.thread->Exit();
 
-	SwitchToMode(_switch_mode);
+	gs->SwitchToMode(gs->GetSwitchMode());
 }
 
 /**

@@ -277,7 +277,7 @@ void IncreaseDate()
 	/* increase day, and check if a new day is there? */
 	_tick_counter++;
 
-	if (_game_mode == GM_MENU) return;
+	if (GameState::GetInstance()->IsGameMode(GM_MENU)) return;
 
 	_date_fract++;
 	if (_date_fract < DAY_TICKS) return;

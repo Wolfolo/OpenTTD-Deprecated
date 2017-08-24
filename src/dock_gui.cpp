@@ -94,9 +94,11 @@ static TileIndex GetOtherAqueductEnd(TileIndex tile_from, TileIndex *tile_to = N
 /** Toolbar window for constructing water infrastructure. */
 struct BuildDocksToolbarWindow : Window {
 	DockToolbarWidgets last_clicked_widget; ///< Contains the last widget that has been clicked on this toolbar.
+	GameState *gs;
 
 	BuildDocksToolbarWindow(WindowDesc *desc, WindowNumber window_number) : Window(desc)
 	{
+		this->gs = GameState::GetInstance();
 		this->last_clicked_widget = WID_DT_INVALID;
 		this->InitNested(window_number);
 		this->OnInvalidateData();
@@ -160,7 +162,7 @@ struct BuildDocksToolbarWindow : Window {
 				break;
 
 			case WID_DT_RIVER: // Build river button (in scenario editor)
-				if (_game_mode != GM_EDITOR) return;
+				if (!this->gs->IsGameMode(GM_EDITOR)) return;
 				HandlePlacePushButton(this, WID_DT_RIVER, SPR_CURSOR_RIVER, HT_RECT);
 				break;
 
@@ -177,7 +179,7 @@ struct BuildDocksToolbarWindow : Window {
 	{
 		switch (this->last_clicked_widget) {
 			case WID_DT_CANAL: // Build canal button
-				VpStartPlaceSizing(tile, (_game_mode == GM_EDITOR) ? VPM_X_AND_Y : VPM_X_OR_Y, DDSP_CREATE_WATER);
+				VpStartPlaceSizing(tile, (this->gs->IsGameMode(GM_EDITOR)) ? VPM_X_AND_Y : VPM_X_OR_Y, DDSP_CREATE_WATER);
 				break;
 
 			case WID_DT_LOCK: // Build lock button
@@ -235,7 +237,7 @@ struct BuildDocksToolbarWindow : Window {
 					GUIPlaceProcDragXY(select_proc, start_tile, end_tile);
 					break;
 				case DDSP_CREATE_WATER:
-					DoCommandP(end_tile, start_tile, (_game_mode == GM_EDITOR && _ctrl_pressed) ? WATER_CLASS_SEA : WATER_CLASS_CANAL, CMD_BUILD_CANAL | CMD_MSG(STR_ERROR_CAN_T_BUILD_CANALS), CcPlaySound_SPLAT_WATER);
+					DoCommandP(end_tile, start_tile, (this->gs->IsGameMode(GM_EDITOR) && _ctrl_pressed) ? WATER_CLASS_SEA : WATER_CLASS_CANAL, CMD_BUILD_CANAL | CMD_MSG(STR_ERROR_CAN_T_BUILD_CANALS), CcPlaySound_SPLAT_WATER);
 					break;
 				case DDSP_CREATE_RIVER:
 					DoCommandP(end_tile, start_tile, WATER_CLASS_RIVER, CMD_BUILD_CANAL | CMD_MSG(STR_ERROR_CAN_T_PLACE_RIVERS), CcPlaySound_SPLAT_WATER);
@@ -285,7 +287,7 @@ struct BuildDocksToolbarWindow : Window {
  */
 static EventState DockToolbarGlobalHotkeys(int hotkey)
 {
-	if (_game_mode != GM_NORMAL) return ES_NOT_HANDLED;
+	if (!GameState::GetInstance()->IsGameMode(GM_NORMAL)) return ES_NOT_HANDLED;
 	Window *w = ShowBuildDocksToolbar();
 	if (w == NULL) return ES_NOT_HANDLED;
 	return w->OnHotkey(hotkey);

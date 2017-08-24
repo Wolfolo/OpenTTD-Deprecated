@@ -23,6 +23,7 @@
 #include "../core/random_func.hpp"
 #include "../core/math_func.hpp"
 #include "../fileio_func.h"
+#include "../game_state.h"
 #include "sdl_v.h"
 #include <SDL.h>
 
@@ -695,7 +696,7 @@ void VideoDriver_SDL::MainLoop()
 		InteractiveRandom(); // randomness
 
 		while (PollEvent() == -1) {}
-		if (_exit_game) break;
+		if (GameState::GetInstance()->ExitGame()) break;
 
 		mod = SDL_CALL SDL_GetModState();
 #if SDL_VERSION_ATLEAST(1, 3, 0)
@@ -715,7 +716,7 @@ void VideoDriver_SDL::MainLoop()
 #endif /* SDL_VERSION_ATLEAST(1, 3, 0) */
 #endif /* defined(_DEBUG) */
 		{
-			if (!_networking && _game_mode != GM_MENU) _fast_forward |= 2;
+			if (!_networking && !GameState::GetInstance()->IsGameMode(GM_MENU)) _fast_forward |= 2;
 		} else if (_fast_forward & 2) {
 			_fast_forward = 0;
 		}

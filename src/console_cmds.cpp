@@ -166,7 +166,7 @@ DEF_CONSOLE_HOOK(ConHookNoNetwork)
 DEF_CONSOLE_HOOK(ConHookNewGRFDeveloperTool)
 {
 	if (_settings_client.gui.newgrf_developer_tools) {
-		if (_game_mode == GM_MENU) {
+		if (GameState::GetInstance()->IsGameMode(GM_MENU)) {
 			if (echo) IConsoleError("This command is only available in game and editor.");
 			return CHR_DISALLOW;
 		}
@@ -215,7 +215,7 @@ DEF_CONSOLE_CMD(ConResetEnginePool)
 		return true;
 	}
 
-	if (_game_mode == GM_MENU) {
+	if (GameState::GetInstance()->IsGameMode(GM_MENU)) {
 		IConsoleError("This command is only available in game and editor.");
 		return true;
 	}
@@ -361,7 +361,7 @@ DEF_CONSOLE_CMD(ConLoad)
 	const FiosItem *item = _console_file_list.FindItem(file);
 	if (item != NULL) {
 		if (GetAbstractFileType(item->type) == FT_SAVEGAME) {
-			_switch_mode = SM_LOAD_GAME;
+			GameState::GetInstance()->SetSwitchMode(SM_LOAD_GAME);
 			_file_to_saveload.SetMode(item->type);
 			_file_to_saveload.SetName(FiosBrowseTo(item));
 			_file_to_saveload.SetTitle(item->title);
@@ -1056,7 +1056,7 @@ DEF_CONSOLE_CMD(ConRestart)
 	/* Don't copy the _newgame pointers to the real pointers, so call SwitchToMode directly */
 	_settings_game.game_creation.map_x = MapLogX();
 	_settings_game.game_creation.map_y = FindFirstBit(MapSizeY());
-	_switch_mode = SM_RESTARTGAME;
+	GameState::GetInstance()->SetSwitchMode(SM_RESTARTGAME);
 	return true;
 }
 
@@ -1127,7 +1127,7 @@ DEF_CONSOLE_CMD(ConStartAI)
 		return true;
 	}
 
-	if (_game_mode != GM_NORMAL) {
+	if (!GameState::GetInstance()->IsGameMode(GM_NORMAL)) {
 		IConsoleWarning("AIs can only be managed in a game.");
 		return true;
 	}
@@ -1184,7 +1184,7 @@ DEF_CONSOLE_CMD(ConReloadAI)
 		return true;
 	}
 
-	if (_game_mode != GM_NORMAL) {
+	if (!GameState::GetInstance()->IsGameMode(GM_NORMAL)) {
 		IConsoleWarning("AIs can only be managed in a game.");
 		return true;
 	}
@@ -1221,7 +1221,7 @@ DEF_CONSOLE_CMD(ConStopAI)
 		return true;
 	}
 
-	if (_game_mode != GM_NORMAL) {
+	if (!GameState::GetInstance()->IsGameMode(GM_NORMAL)) {
 		IConsoleWarning("AIs can only be managed in a game.");
 		return true;
 	}
@@ -1432,9 +1432,11 @@ DEF_CONSOLE_CMD(ConExit)
 		return true;
 	}
 
-	if (_game_mode == GM_NORMAL && _settings_client.gui.autosave_on_exit) DoExitSave();
+	GameState *gs = GameState::GetInstance();
 
-	_exit_game = true;
+	if (gs->IsGameMode(GM_NORMAL) && _settings_client.gui.autosave_on_exit) DoExitSave();
+
+	gs->ExitGame(true);
 	return true;
 }
 
@@ -1445,9 +1447,11 @@ DEF_CONSOLE_CMD(ConPart)
 		return true;
 	}
 
-	if (_game_mode != GM_NORMAL) return false;
+	GameState *gs = GameState::GetInstance();
 
-	_switch_mode = SM_MENU;
+	if (!gs->IsGameMode(GM_NORMAL)) return false;
+
+	gs->SetSwitchMode(SM_MENU);
 	return true;
 }
 

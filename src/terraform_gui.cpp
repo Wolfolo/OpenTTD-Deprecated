@@ -54,7 +54,7 @@ void CcTerraform(const CommandCost &result, TileIndex tile, uint32 p1, uint32 p2
 /** Scenario editor command that generates desert areas */
 static void GenerateDesertArea(TileIndex end, TileIndex start)
 {
-	if (_game_mode != GM_EDITOR) return;
+	if (!GameState::GetInstance()->IsGameMode(GM_EDITOR)) return;
 
 	_generating_world = true;
 
@@ -71,7 +71,7 @@ static void GenerateDesertArea(TileIndex end, TileIndex start)
 /** Scenario editor command that generates rocky areas */
 static void GenerateRockyArea(TileIndex end, TileIndex start)
 {
-	if (_game_mode != GM_EDITOR) return;
+	if (!GameState::GetInstance()->IsGameMode(GM_EDITOR)) return;
 
 	bool success = false;
 	TileArea ta(start, end);
@@ -292,7 +292,7 @@ struct TerraformToolbarWindow : Window {
  */
 static EventState TerraformToolbarGlobalHotkeys(int hotkey)
 {
-	if (_game_mode != GM_NORMAL) return ES_NOT_HANDLED;
+	if (!GameState::GetInstance()->IsGameMode(GM_NORMAL)) return ES_NOT_HANDLED;
 	Window *w = ShowTerraformToolbar(NULL);
 	if (w == NULL) return ES_NOT_HANDLED;
 	return w->OnHotkey(hotkey);
@@ -718,7 +718,7 @@ struct ScenarioEditorLandscapeGenerationWindow : Window {
  */
 static EventState TerraformToolbarEditorGlobalHotkeys(int hotkey)
 {
-	if (_game_mode != GM_EDITOR) return ES_NOT_HANDLED;
+	if (!GameState::GetInstance()->IsGameMode(GM_EDITOR)) return ES_NOT_HANDLED;
 	Window *w = ShowEditorTerraformToolbar();
 	if (w == NULL) return ES_NOT_HANDLED;
 	return w->OnHotkey(hotkey);

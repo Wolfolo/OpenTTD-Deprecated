@@ -305,7 +305,7 @@ static void ShutdownGame()
 	PoolBase::Clean(PT_ALL);
 
 	/* No NewGRFs were loaded when it was still bootstrapping. */
-	if (_game_mode != GM_BOOTSTRAP) ResetNewGRFData();
+	if (!GameState::GetInstance()->IsGameMode(GM_BOOTSTRAP)) ResetNewGRFData();
 
 	/* Close all and any open filehandles */
 	FioCloseAll();
@@ -319,7 +319,7 @@ static void ShutdownGame()
  */
 void LoadIntroGame(bool load_newgrfs = false)
 {
-	_game_mode = GM_MENU;
+	GameState::GetInstance()->SetGameMode(GM_MENU);
 
 	if (load_newgrfs) ResetGRFConfig(false);
 
@@ -452,9 +452,9 @@ struct AfterNewGRFScan : NewGRFScanCallback {
 		IConsoleInit();
 		InitializeGUI();
 		IConsoleCmdExec("exec scripts/autoexec.scr 0");
-
+		GameState *gs = GameState::GetInstance();
 		/* Make sure _settings is filled with _settings_newgame if we switch to a game directly */
-		if (_switch_mode != SM_NONE) MakeNewgameSettingsLive();
+		if (!gs->IsSwitchMode(SM_NONE)) MakeNewgameSettingsLive();
 
 #ifdef ENABLE_NETWORK
 		if (_network_available && network_conn != NULL) {
@@ -479,7 +479,8 @@ struct AfterNewGRFScan : NewGRFScanCallback {
 			if (port != NULL) rport = atoi(port);
 
 			LoadIntroGame();
-			_switch_mode = SM_NONE;
+
+			gs->SetSwitchMode(SM_NONE);
 			NetworkClientConnectGame(NetworkAddress(network_conn, rport), join_as, join_server_password, join_company_password);
 		}
 #endif /* ENABLE_NETWORK */
@@ -552,8 +553,10 @@ int openttd_main(int argc, char *argv[])
 	_dedicated_forks = false;
 #endif /* ENABLE_NETWORK */
 
-	_game_mode = GM_MENU;
-	_switch_mode = SM_MENU;
+
+	GameState *gs = GameState::GetInstance();
+	gs->SetGameMode(GM_MENU);
+	gs->SetSwitchMode(SM_MENU);
 	_config_file = NULL;
 
 	GetOptData mgo(argc - 1, argv + 1, _options);
@@ -614,12 +617,12 @@ int openttd_main(int argc, char *argv[])
 				if (mgo.opt != NULL) SetDebugString(mgo.opt);
 				break;
 			}
-		case 'e': _switch_mode = (_switch_mode == SM_LOAD_GAME || _switch_mode == SM_LOAD_SCENARIO ? SM_LOAD_SCENARIO : SM_EDITOR); break;
+		case 'e': gs->SetSwitchMode(gs->IsSwitchMode(SM_LOAD_GAME) || gs->IsSwitchMode(SM_LOAD_SCENARIO) ? SM_LOAD_SCENARIO : SM_EDITOR); break;
 		case 'g':
 			if (mgo.opt != NULL) {
 				_file_to_saveload.SetName(mgo.opt);
-				bool is_scenario = _switch_mode == SM_EDITOR || _switch_mode == SM_LOAD_SCENARIO;
-				_switch_mode = is_scenario ? SM_LOAD_SCENARIO : SM_LOAD_GAME;
+				bool is_scenario = gs->IsSwitchMode(SM_EDITOR) || gs->IsSwitchMode(SM_LOAD_SCENARIO);
+				gs->SetSwitchMode(is_scenario ? SM_LOAD_SCENARIO : SM_LOAD_GAME);
 				_file_to_saveload.SetMode(SLO_LOAD, is_scenario ? FT_SCENARIO : FT_SAVEGAME, DFT_GAME_FILE);
 
 				/* if the file doesn't exist or it is not a valid savegame, let the saveload code show an error */
@@ -632,7 +635,7 @@ int openttd_main(int argc, char *argv[])
 				break;
 			}
 
-			_switch_mode = SM_NEWGAME;
+			gs->SetSwitchMode(SM_NEWGAME);
 			/* Give a random map if no seed has been given */
 			if (scanner->generation_seed == GENERATE_NEW_SEED) {
 				scanner->generation_seed = InteractiveRandom();
@@ -913,11 +916,13 @@ exit_normal:
 
 void HandleExitGameRequest()
 {
-	if (_game_mode == GM_MENU || _game_mode == GM_BOOTSTRAP) { // do not ask to quit on the main screen
-		_exit_game = true;
+	GameState *gs = GameState::GetInstance();
+
+	if (gs->IsGameMode(GM_MENU) || gs->IsGameMode(GM_BOOTSTRAP)) { // do not ask to quit on the main screen
+		gs->ExitGame(true);
 	} else if (_settings_client.gui.autosave_on_exit) {
 		DoExitSave();
-		_exit_game = true;
+		gs->ExitGame(true);
 	} else {
 		AskExitGame();
 	}
@@ -964,7 +969,7 @@ static void MakeNewGameDone()
 
  void MakeNewGame(bool from_heightmap, bool reset_settings)
 {
-	_game_mode = GM_NORMAL;
+	GameState::GetInstance()->SetGameMode(GM_NORMAL);
 
 	ResetGRFConfig(true);
 
@@ -979,7 +984,7 @@ static void MakeNewEditorWorldDone()
 
 void MakeNewEditorWorld()
 {
-	_game_mode = GM_EDITOR;
+	GameState::GetInstance()->SetGameMode(GM_EDITOR);
 
 	ResetGRFConfig(true);
 
@@ -1001,9 +1006,8 @@ bool SafeLoad(const char *filename, SaveLoadOperation fop, DetailedFileType dft,
 {
 	assert(fop == SLO_LOAD);
 	assert(dft == DFT_GAME_FILE || (lf == NULL && dft == DFT_OLD_GAME_FILE));
-	GameMode ogm = _game_mode;
-
-	_game_mode = newgm;
+	GameState *gs = GameState::GetInstance();
+	gs->SetGameMode(newgm);
 
 	switch (lf == NULL ? SaveOrLoad(filename, fop, dft, subdir) : LoadWithFilter(lf)) {
 		case SL_OK: return true;
@@ -1027,7 +1031,7 @@ bool SafeLoad(const char *filename, SaveLoadOperation fop, DetailedFileType dft,
 			}
 #endif /* ENABLE_NETWORK */
 
-			switch (ogm) {
+			switch (gs->GetOldGameMode()) {
 				default:
 				case GM_MENU:   LoadIntroGame();      break;
 				case GM_EDITOR: MakeNewEditorWorld(); break;
@@ -1035,7 +1039,7 @@ bool SafeLoad(const char *filename, SaveLoadOperation fop, DetailedFileType dft,
 			return false;
 
 		default:
-			_game_mode = ogm;
+			gs->RestoreGameMode();
 			return false;
 	}
 }
@@ -1211,7 +1215,7 @@ void StateGameLoop()
 
 	Layouter::ReduceLineCache();
 
-	if (_game_mode == GM_EDITOR) {
+	if (GameState::GetInstance()->IsGameMode(GM_EDITOR)) {
 		BasePersistentStorageArray::SwitchMode(PSM_ENTER_GAMELOOP);
 		RunTileLoop();
 		CallVehicleTicks();
@@ -1290,7 +1294,9 @@ static void DoAutosave()
 
 void GameLoop()
 {
-	if (_game_mode == GM_BOOTSTRAP) {
+	GameState *gs = GameState::GetInstance();
+
+	if (gs->IsGameMode(GM_BOOTSTRAP)) {
 #ifdef ENABLE_NETWORK
 		/* Check for UDP stuff */
 		if (_network_available) NetworkBackgroundLoop();
@@ -1309,9 +1315,9 @@ void GameLoop()
 	}
 
 	/* switch game mode? */
-	if (_switch_mode != SM_NONE && !HasModalProgress()) {
-		SwitchToMode(_switch_mode);
-		_switch_mode = SM_NONE;
+	if (!gs->IsSwitchMode(SM_NONE) && !HasModalProgress()) {
+		gs->SwitchToMode(gs->GetSwitchMode());
+		gs->SetSwitchMode(SM_NONE);
 	}
 
 	IncreaseSpriteLRU();
@@ -1350,7 +1356,7 @@ void GameLoop()
 
 	if (!_pause_mode && HasBit(_display_opt, DO_FULL_ANIMATION)) DoPaletteAnimations();
 
-	if (!_pause_mode || _game_mode == GM_EDITOR || _settings_game.construction.command_pause_level > CMDPL_NO_CONSTRUCTION) MoveAllTextEffects();
+	if (!_pause_mode || gs->IsGameMode(GM_EDITOR) || _settings_game.construction.command_pause_level > CMDPL_NO_CONSTRUCTION) MoveAllTextEffects();
 
 	InputLoop();
 

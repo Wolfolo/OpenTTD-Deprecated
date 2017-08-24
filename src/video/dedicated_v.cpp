@@ -72,8 +72,10 @@ static void OS2_SwitchToConsoleMode()
 /* Signal handlers */
 static void DedicatedSignalHandler(int sig)
 {
-	if (_game_mode == GM_NORMAL && _settings_client.gui.autosave_on_exit) DoExitSave();
-	_exit_game = true;
+	GameState *gs = GameState::GetInstance();
+
+	if (gs->IsGameState(GM_NORMAL) && _settings_client.gui.autosave_on_exit) DoExitSave();
+	gs->ExitGame(true);
 	signal(sig, DedicatedSignalHandler);
 }
 #endif
@@ -241,7 +243,7 @@ static void DedicatedHandleKeyInput()
 
 	if (!InputWaiting()) return;
 
-	if (_exit_game) return;
+	if (GameState::GetInstance()->ExitGame()) return;
 
 #if defined(UNIX) || defined(__OS2__) || defined(PSP)
 	if (fgets(input_line, lengthof(input_line), stdin) == NULL) return;
@@ -281,13 +283,15 @@ void VideoDriver_Dedicated::MainLoop()
 	_network_dedicated = true;
 	_current_company = _local_company = COMPANY_SPECTATOR;
 
+	GameState *gs = GameState::GetInstance();
+
 	/* If SwitchMode is SM_LOAD_GAME, it means that the user used the '-g' options */
-	if (_switch_mode != SM_LOAD_GAME) {
+	if (!gs->IsSwitchMode(SM_LOAD_GAME)) {
 		StartNewGameWithoutGUI(GENERATE_NEW_SEED);
-		SwitchToMode(_switch_mode);
-		_switch_mode = SM_NONE;
+		gs->SwitchToMode(gs->GetSwitchMode());
+		gs->SetSwitchMode(SM_NONE);
 	} else {
-		_switch_mode = SM_NONE;
+		gs->SetSwitchMode(SM_NONE);
 		/* First we need to test if the savegame can be loaded, else we will end up playing the
 		 *  intro game... */
 		if (!SafeLoad(_file_to_saveload.name, _file_to_saveload.file_op, _file_to_saveload.detail_ftype, GM_NORMAL, BASE_DIR)) {
@@ -296,7 +300,7 @@ void VideoDriver_Dedicated::MainLoop()
 			_networking = false;
 		} else {
 			/* We can load this game, so go ahead */
-			SwitchToMode(SM_LOAD_GAME);
+			gs->SwitchToMode(SM_LOAD_GAME);
 		}
 	}
 
@@ -307,7 +311,7 @@ void VideoDriver_Dedicated::MainLoop()
 		return;
 	}
 
-	while (!_exit_game) {
+	while (!gs->ExitGame()) {
 		uint32 prev_cur_ticks = cur_ticks; // to check for wrapping
 		InteractiveRandom(); // randomness
 

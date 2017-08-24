@@ -96,7 +96,7 @@ public:
 
 		if (widget != WID_BT_MANY_RANDOM) return;
 
-		if (_game_mode != GM_EDITOR) {
+		if (!GameState::GetInstance()->IsGameMode(GM_EDITOR)) {
 			size->width = 0;
 			size->height = 0;
 		}
@@ -244,6 +244,6 @@ static WindowDesc _build_trees_desc(
 
 void ShowBuildTreesToolbar()
 {
-	if (_game_mode != GM_EDITOR && !Company::IsValidID(_local_company)) return;
+	if (!GameState::GetInstance()->IsGameMode(GM_EDITOR) && !Company::IsValidID(_local_company)) return;
 	AllocateWindowDescFront<BuildTreesWindow>(&_build_trees_desc, 0);
 }

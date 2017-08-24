@@ -222,7 +222,7 @@ struct AIListWindow : public Window {
 	 */
 	virtual void OnInvalidateData(int data = 0, bool gui_scope = true)
 	{
-		if (_game_mode == GM_NORMAL && Company::IsValidID(this->slot)) {
+		if (GameState::GetInstance()->IsGameMode(GM_NORMAL) && Company::IsValidID(this->slot)) {
 			delete this;
 			return;
 		}
@@ -292,6 +292,7 @@ struct AISettingsWindow : public Window {
 	Scrollbar *vscroll;                   ///< Cache of the vertical scrollbar.
 	typedef std::vector<const ScriptConfigItem *> VisibleSettingsList;
 	VisibleSettingsList visible_settings; ///< List of visible AI settings
+	GameState *gs;
 
 	/**
 	 * Constructor for the window.
@@ -305,13 +306,14 @@ struct AISettingsWindow : public Window {
 		closing_dropdown(false),
 		timeout(0)
 	{
+		this->gs = GameState::GetInstance();
 		this->ai_config = GetConfig(slot);
 
 		this->CreateNestedTree();
 		this->vscroll = this->GetScrollbar(WID_AIS_SCROLLBAR);
 		this->FinishInitNested(slot);  // Initializes 'this->line_height' as side effect.
 
-		this->SetWidgetDisabledState(WID_AIS_RESET, _game_mode != GM_MENU && Company::IsValidID(this->slot));
+		this->SetWidgetDisabledState(WID_AIS_RESET, !this->gs->IsGameMode(GM_MENU) && Company::IsValidID(this->slot));
 
 		this->RebuildVisibleSettings();
 	}
@@ -377,7 +379,7 @@ struct AISettingsWindow : public Window {
 		for (; this->vscroll->IsVisible(i) && it != visible_settings.end(); i++, it++) {
 			const ScriptConfigItem &config_item = **it;
 			int current_value = config->GetSetting((config_item).name);
-			bool editable = _game_mode == GM_MENU || ((this->slot != OWNER_DEITY) && !Company::IsValidID(this->slot)) || (config_item.flags & SCRIPTCONFIG_INGAME) != 0;
+			bool editable = this->gs->IsGameMode(GM_MENU) || ((this->slot != OWNER_DEITY) && !Company::IsValidID(this->slot)) || (config_item.flags & SCRIPTCONFIG_INGAME) != 0;
 
 			StringID str;
 			TextColour colour;
@@ -440,7 +442,7 @@ struct AISettingsWindow : public Window {
 				VisibleSettingsList::const_iterator it = this->visible_settings.begin();
 				for (int i = 0; i < num; i++) it++;
 				const ScriptConfigItem config_item = **it;
-				if (_game_mode == GM_NORMAL && ((this->slot == OWNER_DEITY) || Company::IsValidID(this->slot)) && (config_item.flags & SCRIPTCONFIG_INGAME) == 0) return;
+				if (this->gs->IsGameMode(GM_NORMAL) && ((this->slot == OWNER_DEITY) || Company::IsValidID(this->slot)) && (config_item.flags & SCRIPTCONFIG_INGAME) == 0) return;
 
 				if (this->clicked_row != num) {
 					DeleteChildWindows(WC_QUERY_STRING);
@@ -521,7 +523,7 @@ struct AISettingsWindow : public Window {
 				break;
 
 			case WID_AIS_RESET:
-				if (_game_mode == GM_MENU || !Company::IsValidID(this->slot)) {
+				if (this->gs->IsGameMode(GM_MENU) || !Company::IsValidID(this->slot)) {
 					this->ai_config->ResetSettings();
 					this->SetDirty();
 				}
@@ -535,7 +537,7 @@ struct AISettingsWindow : public Window {
 		VisibleSettingsList::const_iterator it = this->visible_settings.begin();
 		for (int i = 0; i < this->clicked_row; i++) it++;
 		const ScriptConfigItem config_item = **it;
-		if (_game_mode == GM_NORMAL && ((this->slot == OWNER_DEITY) || Company::IsValidID(this->slot)) && (config_item.flags & SCRIPTCONFIG_INGAME) == 0) return;
+		if (this->gs->IsGameMode(GM_NORMAL) && ((this->slot == OWNER_DEITY) || Company::IsValidID(this->slot)) && (config_item.flags & SCRIPTCONFIG_INGAME) == 0) return;
 		int32 value = atoi(str);
 		this->ai_config->SetSetting(config_item.name, value);
 		this->SetDirty();
@@ -547,7 +549,7 @@ struct AISettingsWindow : public Window {
 		VisibleSettingsList::const_iterator it = this->visible_settings.begin();
 		for (int i = 0; i < this->clicked_row; i++) it++;
 		const ScriptConfigItem config_item = **it;
-		if (_game_mode == GM_NORMAL && ((this->slot == OWNER_DEITY) || Company::IsValidID(this->slot)) && (config_item.flags & SCRIPTCONFIG_INGAME) == 0) return;
+		if (this->gs->IsGameMode(GM_NORMAL) && ((this->slot == OWNER_DEITY) || Company::IsValidID(this->slot)) && (config_item.flags & SCRIPTCONFIG_INGAME) == 0) return;
 		this->ai_config->SetSetting(config_item.name, index);
 		this->SetDirty();
 	}
@@ -716,9 +718,11 @@ struct AIConfigWindow : public Window {
 	CompanyID selected_slot; ///< The currently selected AI slot or \c INVALID_COMPANY.
 	int line_height;         ///< Height of a single AI-name line.
 	Scrollbar *vscroll;      ///< Cache of the vertical scrollbar.
+	GameState *gs;
 
 	AIConfigWindow() : Window(&_ai_config_desc)
 	{
+		this->gs = GameState::GetInstance();
 		this->InitNested(WN_GAME_OPTIONS_AI); // Initializes 'this->line_height' as a side effect.
 		this->vscroll = this->GetScrollbar(WID_AIC_SCROLLBAR);
 		this->selected_slot = INVALID_COMPANY;
@@ -796,9 +800,11 @@ struct AIConfigWindow : public Window {
 	 */
 	static bool IsEditable(CompanyID slot)
 	{
-		if (slot == OWNER_DEITY) return _game_mode != GM_NORMAL || Game::GetInstance() != NULL;
+		GameState *gs = GameState::GetInstance();
 
-		if (_game_mode != GM_NORMAL) {
+		if (slot == OWNER_DEITY) return !gs->IsGameMode(GM_NORMAL) || Game::GetInstance() != NULL;
+
+		if (!gs->IsGameMode(GM_NORMAL)) {
 			return slot > 0 && slot <= GetGameSettings().difficulty.max_no_competitors;
 		}
 		if (Company::IsValidID(slot) || slot < 0) return false;
@@ -832,7 +838,7 @@ struct AIConfigWindow : public Window {
 				for (int i = this->vscroll->GetPosition(); this->vscroll->IsVisible(i) && i < MAX_COMPANIES; i++) {
 					StringID text;
 
-					if ((_game_mode != GM_NORMAL && i == 0) || (_game_mode == GM_NORMAL && Company::IsValidHumanID(i))) {
+					if ((!this->gs->IsGameMode(GM_NORMAL) && i == 0) || (this->gs->IsGameMode(GM_NORMAL) && Company::IsValidHumanID(i))) {
 						text = STR_AI_CONFIG_HUMAN_PLAYER;
 					} else if (AIConfig::GetConfig((CompanyID)i)->GetInfo() != NULL) {
 						SetDParamStr(0, AIConfig::GetConfig((CompanyID)i)->GetInfo()->GetName());
@@ -875,7 +881,7 @@ struct AIConfigWindow : public Window {
 			case WID_AIC_GAMELIST: {
 				this->selected_slot = OWNER_DEITY;
 				this->InvalidateData();
-				if (click_count > 1 && this->selected_slot != INVALID_COMPANY && _game_mode != GM_NORMAL) ShowAIListWindow((CompanyID)this->selected_slot);
+				if (click_count > 1 && this->selected_slot != INVALID_COMPANY && !this->gs->IsGameMode(GM_NORMAL)) ShowAIListWindow((CompanyID)this->selected_slot);
 				break;
 			}
 
@@ -943,7 +949,7 @@ struct AIConfigWindow : public Window {
 
 		this->SetWidgetDisabledState(WID_AIC_DECREASE, GetGameSettings().difficulty.max_no_competitors == 0);
 		this->SetWidgetDisabledState(WID_AIC_INCREASE, GetGameSettings().difficulty.max_no_competitors == MAX_COMPANIES - 1);
-		this->SetWidgetDisabledState(WID_AIC_CHANGE, (this->selected_slot == OWNER_DEITY && _game_mode == GM_NORMAL) || this->selected_slot == INVALID_COMPANY);
+		this->SetWidgetDisabledState(WID_AIC_CHANGE, (this->selected_slot == OWNER_DEITY && this->gs->IsGameMode(GM_NORMAL)) || this->selected_slot == INVALID_COMPANY);
 		this->SetWidgetDisabledState(WID_AIC_CONFIGURE, this->selected_slot == INVALID_COMPANY || GetConfig(this->selected_slot)->GetConfigList()->size() == 0);
 		this->SetWidgetDisabledState(WID_AIC_MOVE_UP, this->selected_slot == OWNER_DEITY || this->selected_slot == INVALID_COMPANY || !IsEditable((CompanyID)(this->selected_slot - 1)));
 		this->SetWidgetDisabledState(WID_AIC_MOVE_DOWN, this->selected_slot == OWNER_DEITY || this->selected_slot == INVALID_COMPANY || !IsEditable((CompanyID)(this->selected_slot + 1)));
@@ -1429,7 +1435,7 @@ NWidgetBase *MakeCompanyButtonRowsAIDebug(int *biggest_index)
  */
 static EventState AIDebugGlobalHotkeys(int hotkey)
 {
-	if (_game_mode != GM_NORMAL) return ES_NOT_HANDLED;
+	if (!GameState::GetInstance()->IsGameMode(GM_NORMAL)) return ES_NOT_HANDLED;
 	Window *w = ShowAIDebugWindow(INVALID_COMPANY);
 	if (w == NULL) return ES_NOT_HANDLED;
 	return w->OnHotkey(hotkey);

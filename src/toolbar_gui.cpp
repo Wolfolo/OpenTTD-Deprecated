@@ -425,7 +425,7 @@ static CallBackFunction ToolbarScenSaveOrLoad(Window *w)
  */
 static CallBackFunction MenuClickSaveLoad(int index = 0)
 {
-	if (_game_mode == GM_EDITOR) {
+	if (GameState::GetInstance()->IsGameMode(GM_EDITOR)) {
 		switch (index) {
 			case SLEME_SAVE_SCENARIO:  ShowSaveLoadDialog(FT_SCENARIO, SLO_SAVE);  break;
 			case SLEME_LOAD_SCENARIO:  ShowSaveLoadDialog(FT_SCENARIO, SLO_LOAD);  break;
@@ -847,7 +847,7 @@ static CallBackFunction MenuClickShowAir(int index)
 static CallBackFunction ToolbarZoomInClick(Window *w)
 {
 	if (DoZoomInOutWindow(ZOOM_IN, FindWindowById(WC_MAIN_WINDOW, 0))) {
-		w->HandleButtonClick((_game_mode == GM_EDITOR) ? (byte)WID_TE_ZOOM_IN : (byte)WID_TN_ZOOM_IN);
+		w->HandleButtonClick(GameState::GetInstance()->IsGameMode(GM_EDITOR) ? (byte)WID_TE_ZOOM_IN : (byte)WID_TN_ZOOM_IN);
 		if (_settings_client.sound.click_beep) SndPlayFx(SND_15_BEEP);
 	}
 	return CBF_NONE;
@@ -858,7 +858,7 @@ static CallBackFunction ToolbarZoomInClick(Window *w)
 static CallBackFunction ToolbarZoomOutClick(Window *w)
 {
 	if (DoZoomInOutWindow(ZOOM_OUT, FindWindowById(WC_MAIN_WINDOW, 0))) {
-		w->HandleButtonClick((_game_mode == GM_EDITOR) ? (byte)WID_TE_ZOOM_OUT : (byte)WID_TN_ZOOM_OUT);
+		w->HandleButtonClick(GameState::GetInstance()->IsGameMode(GM_EDITOR) ? (byte)WID_TE_ZOOM_OUT : (byte)WID_TN_ZOOM_OUT);
 		if (_settings_client.sound.click_beep) SndPlayFx(SND_15_BEEP);
 	}
 	return CBF_NONE;
@@ -2013,7 +2013,7 @@ struct MainToolbarWindow : Window {
 
 	virtual void OnClick(Point pt, int widget, int click_count)
 	{
-		if (_game_mode != GM_MENU && !this->IsWidgetDisabled(widget)) _toolbar_button_procs[widget](this);
+		if (!GameState::GetInstance()->IsGameMode(GM_MENU) && !this->IsWidgetDisabled(widget)) _toolbar_button_procs[widget](this);
 	}
 
 	virtual void OnDropdownSelect(int widget, int index)
@@ -2369,7 +2369,7 @@ struct ScenarioEditorToolbarWindow : Window {
 
 	virtual void OnClick(Point pt, int widget, int click_count)
 	{
-		if (_game_mode == GM_MENU) return;
+		if (GameState::GetInstance()->IsGameMode(GM_MENU)) return;
 		CallBackFunction cbf = _scen_toolbar_button_procs[widget](this);
 		if (cbf != CBF_NONE) _last_started_action = cbf;
 	}
@@ -2571,7 +2571,7 @@ void AllocateToolbar()
 	/* Clean old GUI values; railtype is (re)set by rail_gui.cpp */
 	_last_built_roadtype = ROADTYPE_ROAD;
 
-	if (_game_mode == GM_EDITOR) {
+	if (GameState::GetInstance()->IsGameMode(GM_EDITOR)) {
 		new ScenarioEditorToolbarWindow(&_toolb_scen_desc);
 	} else {
 		new MainToolbarWindow(&_toolb_normal_desc);

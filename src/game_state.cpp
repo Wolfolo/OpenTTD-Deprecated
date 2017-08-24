@@ -37,7 +37,87 @@ extern void MakeNewgameSettingsLive();
 extern void MakeNewEditorWorld();
 extern bool SafeLoad(const char *filename, SaveLoadOperation fop, DetailedFileType dft, GameMode newgm, Subdirectory subdir, struct LoadFilter *lf = NULL);
 
-void SwitchToMode(SwitchMode new_mode)
+/* static */ GameState *GameState::instance;
+
+/**
+ * Checks the current game mode.
+ * @param mode the game mode to check
+ * @return True if the mode matches
+ */
+bool GameState::IsGameMode(GameMode mode)
+{
+	return this->game_mode == mode;
+}
+
+/**
+ * Restores the backed up game mode.
+ */
+void GameState::RestoreGameMode()
+{
+	this->game_mode = this->old_game_mode;
+}
+
+/**
+ * Sets the new game mode. Back ups the current game mode.
+ * @param new_mode the new mode to set
+ */
+void GameState::SetGameMode(GameMode new_mode)
+{
+	this->old_game_mode = this->game_mode;
+	this->game_mode = new_mode;
+}
+
+/**
+ * Returns the current game mode.
+ * @return GameMode
+ */
+GameMode GameState::GetGameMode()
+{
+	return this->game_mode;
+}
+
+/**
+ * Returns the backed up game mode.
+ * @return GameMode
+ */
+GameMode GameState::GetOldGameMode()
+{
+	return this->old_game_mode;
+}
+
+/**
+ * Checks the current switch mode.
+ * @param mode the switch mode to check
+ * @return True if the mode matches
+ */
+bool GameState::IsSwitchMode(SwitchMode mode)
+{
+	return this->switch_mode == mode;
+}
+
+/**
+ * Prepare the game to switch mode in the next mainloop.
+ * @param new_mode the the mode to switch to
+ */
+void GameState::SetSwitchMode(SwitchMode new_mode)
+{
+	this->switch_mode = new_mode;
+}
+
+/**
+ * Returns the current switch mode.
+ * @return SwitchMode
+ */
+SwitchMode GameState::GetSwitchMode()
+{
+	return this->switch_mode;
+}
+
+/**
+ * Execute the switch to the new mode.
+ * @param new_mode the new game mode to switch to
+ */
+void GameState::SwitchToMode(SwitchMode new_mode)
 {
 #ifdef ENABLE_NETWORK
 	/* If we are saving something, the network stays in his current state */
@@ -176,4 +256,22 @@ void SwitchToMode(SwitchMode new_mode)
 
 		default: NOT_REACHED();
 	}
+}
+
+/**
+ * Returns whether we are exiting the game.
+ * @return True if we are exiting the game
+ */
+bool GameState::ExitGame()
+{
+	return this->exit_game;
+}
+
+/**
+ * Sets whether we are exiting the game.
+ * @param bool exit the game
+ */
+void GameState::ExitGame(bool exit)
+{
+	this->exit_game = exit;
 }

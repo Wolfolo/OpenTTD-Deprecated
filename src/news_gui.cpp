@@ -644,7 +644,7 @@ static void MoveToNextItem()
  */
 void AddNewsItem(StringID string, NewsType type, NewsFlag flags, NewsReferenceType reftype1, uint32 ref1, NewsReferenceType reftype2, uint32 ref2, void *free_data)
 {
-	if (_game_mode == GM_MENU) return;
+	if (GameState::GetInstance()->IsGameMode(GM_MENU)) return;
 
 	/* Create new news item node */
 	NewsItem *ni = new NewsItem;

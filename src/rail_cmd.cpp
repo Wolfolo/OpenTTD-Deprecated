@@ -2311,8 +2311,10 @@ static void DrawTrackBits(TileInfo *ti, TrackBits track)
 		if (track & TRACK_BIT_RIGHT) DrawGroundSprite(rti->base_sprites.single_e, PAL_NONE);
 	}
 
+	GameState *gs = GameState::GetInstance();
+
 	/* PBS debugging, draw reserved tracks darker */
-	if (_game_mode != GM_MENU && _settings_client.gui.show_track_reservation) {
+	if (!gs->IsGameMode(GM_MENU) && _settings_client.gui.show_track_reservation) {
 		/* Get reservation, but mask track on halftile slope */
 		TrackBits pbs = GetRailReservationTrackBits(ti->tile) & track;
 		if (pbs & TRACK_BIT_X) {
@@ -2350,7 +2352,7 @@ static void DrawTrackBits(TileInfo *ti, TrackBits track)
 		}
 		DrawGroundSprite(image, pal, &(_halftile_sub_sprite[halftile_corner]));
 
-		if (_game_mode != GM_MENU && _settings_client.gui.show_track_reservation && HasReservedTracks(ti->tile, CornerToTrackBits(halftile_corner))) {
+		if (!gs->IsGameMode(GM_MENU) && _settings_client.gui.show_track_reservation && HasReservedTracks(ti->tile, CornerToTrackBits(halftile_corner))) {
 			static const byte _corner_to_track_sprite[] = {3, 1, 2, 0};
 			DrawGroundSprite(_corner_to_track_sprite[halftile_corner] + rti->base_sprites.single_n, PALETTE_CRASH, NULL, 0, -(int)TILE_HEIGHT);
 		}
@@ -2482,7 +2484,7 @@ static void DrawTile_Track(TileInfo *ti)
 			}
 		} else {
 			/* PBS debugging, draw reserved tracks darker */
-			if (_game_mode != GM_MENU && _settings_client.gui.show_track_reservation && HasDepotReservation(ti->tile)) {
+			if (!GameState::GetInstance()->IsGameMode(GM_MENU) && _settings_client.gui.show_track_reservation && HasDepotReservation(ti->tile)) {
 				switch (GetRailDepotDirection(ti->tile)) {
 					case DIAGDIR_NE:
 						if (!IsInvisibilitySet(TO_BUILDINGS)) break;

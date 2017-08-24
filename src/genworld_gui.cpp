@@ -268,11 +268,13 @@ static void StartGeneratingLandscape(GenerateLandscapeWindowMode mode)
 	MakeNewgameSettingsLive();
 	ResetGRFConfig(true);
 
+	GameState *gs = GameState::GetInstance();
+
 	if (_settings_client.sound.confirm) SndPlayFx(SND_15_BEEP);
 	switch (mode) {
-		case GLWM_GENERATE:  _switch_mode = (_game_mode == GM_EDITOR) ? SM_GENRANDLAND    : SM_NEWGAME;         break;
-		case GLWM_HEIGHTMAP: _switch_mode = (_game_mode == GM_EDITOR) ? SM_LOAD_HEIGHTMAP : SM_START_HEIGHTMAP; break;
-		case GLWM_SCENARIO:  _switch_mode = SM_EDITOR; break;
+		case GLWM_GENERATE:  gs->SetSwitchMode((gs->IsGameMode(GM_EDITOR)) ? SM_GENRANDLAND    : SM_NEWGAME);         break;
+		case GLWM_HEIGHTMAP: gs->SetSwitchMode((gs->IsGameMode(GM_EDITOR)) ? SM_LOAD_HEIGHTMAP : SM_START_HEIGHTMAP); break;
+		case GLWM_SCENARIO:  gs->SetSwitchMode(SM_EDITOR); break;
 		default: NOT_REACHED();
 	}
 }
@@ -314,9 +316,11 @@ struct GenerateLandscapeWindow : public Window {
 	uint y;
 	char name[64];
 	GenerateLandscapeWindowMode mode;
+	GameState *gs;
 
 	GenerateLandscapeWindow(WindowDesc *desc, WindowNumber number = 0) : Window(desc)
 	{
+		this->gs = GameState::GetInstance();
 		this->InitNested(number);
 
 		this->LowerWidget(_settings_newgame.game_creation.landscape + WID_GL_TEMPERATE);
@@ -324,9 +328,9 @@ struct GenerateLandscapeWindow : public Window {
 		this->mode = (GenerateLandscapeWindowMode)this->window_number;
 
 		/* Disable town, industry and trees in SE */
-		this->SetWidgetDisabledState(WID_GL_TOWN_PULLDOWN,     _game_mode == GM_EDITOR);
-		this->SetWidgetDisabledState(WID_GL_INDUSTRY_PULLDOWN, _game_mode == GM_EDITOR);
-		this->SetWidgetDisabledState(WID_GL_TREE_PULLDOWN,     _game_mode == GM_EDITOR);
+		this->SetWidgetDisabledState(WID_GL_TOWN_PULLDOWN,     gs->IsGameMode(GM_EDITOR));
+		this->SetWidgetDisabledState(WID_GL_INDUSTRY_PULLDOWN, gs->IsGameMode(GM_EDITOR));
+		this->SetWidgetDisabledState(WID_GL_TREE_PULLDOWN,     gs->IsGameMode(GM_EDITOR));
 
 		this->OnInvalidateData();
 	}
@@ -342,7 +346,7 @@ struct GenerateLandscapeWindow : public Window {
 			case WID_GL_SNOW_LEVEL_TEXT:      SetDParam(0, _settings_newgame.game_creation.snow_line_height); break;
 
 			case WID_GL_TOWN_PULLDOWN:
-				if (_game_mode == GM_EDITOR) {
+				if (gs->IsGameMode(GM_EDITOR)) {
 					SetDParam(0, STR_CONFIG_SETTING_OFF);
 				} else if (_settings_newgame.difficulty.number_towns == CUSTOM_TOWN_NUMBER_DIFFICULTY) {
 					SetDParam(0, STR_NUM_CUSTOM_NUMBER);
@@ -352,7 +356,7 @@ struct GenerateLandscapeWindow : public Window {
 				}
 				break;
 
-			case WID_GL_INDUSTRY_PULLDOWN:   SetDParam(0, _game_mode == GM_EDITOR ? STR_CONFIG_SETTING_OFF : _num_inds[_settings_newgame.difficulty.industry_density]); break;
+			case WID_GL_INDUSTRY_PULLDOWN:   SetDParam(0, gs->IsGameMode(GM_EDITOR) ? STR_CONFIG_SETTING_OFF : _num_inds[_settings_newgame.difficulty.industry_density]); break;
 			case WID_GL_LANDSCAPE_PULLDOWN:  SetDParam(0, _landscape[_settings_newgame.game_creation.land_generator]); break;
 			case WID_GL_TREE_PULLDOWN:       SetDParam(0, _tree_placer[_settings_newgame.game_creation.tree_placer]); break;
 			case WID_GL_TERRAIN_PULLDOWN:    SetDParam(0, _elevations[_settings_newgame.difficulty.terrain_type]); break;

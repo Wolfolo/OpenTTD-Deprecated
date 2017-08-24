@@ -794,7 +794,7 @@ static void TownTickHandler(Town *t)
 
 void OnTick_Town()
 {
-	if (_game_mode == GM_EDITOR) return;
+	if (GameState::GetInstance()->IsGameMode(GM_EDITOR)) return;
 
 	Town *t;
 	FOR_ALL_TOWNS(t) {
@@ -1407,7 +1407,7 @@ static bool GrowTownAtRoad(Town *t, TileIndex tile)
 			/* Don't allow building over roads of other cities */
 			if (IsRoadOwner(tile, ROADTYPE_ROAD, OWNER_TOWN) && Town::GetByTile(tile) != t) {
 				return false;
-			} else if (IsRoadOwner(tile, ROADTYPE_ROAD, OWNER_NONE) && _game_mode == GM_EDITOR) {
+			} else if (IsRoadOwner(tile, ROADTYPE_ROAD, OWNER_NONE) && GameState::GetInstance()->IsGameMode(GM_EDITOR)) {
 				/* If we are in the SE, and this road-piece has no town owner yet, it just found an
 				 * owner :) (happy happy happy road now) */
 				SetRoadOwner(tile, ROADTYPE_ROAD, OWNER_TOWN);
@@ -1611,7 +1611,7 @@ static void DoCreateTown(Town *t, TileIndex tile, uint32 townnameparts, TownSize
 	int x = (int)size * 16 + 3;
 	if (size == TSZ_RANDOM) x = (Random() & 0xF) + 8;
 	/* Don't create huge cities when founding town in-game */
-	if (city && (!manual || _game_mode == GM_EDITOR)) x *= _settings_game.economy.initial_city_size;
+	if (city && (!manual || GameState::GetInstance()->IsGameMode(GM_EDITOR))) x *= _settings_game.economy.initial_city_size;
 
 	t->cache.num_houses += x;
 	UpdateTownRadius(t);
@@ -1693,7 +1693,7 @@ CommandCost CmdFoundTown(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 	if (layout >= NUM_TLS) return CMD_ERROR;
 
 	/* Some things are allowed only in the scenario editor and for game scripts. */
-	if (_game_mode != GM_EDITOR && _current_company != OWNER_DEITY) {
+	if (!GameState::GetInstance()->IsGameMode(GM_EDITOR) && _current_company != OWNER_DEITY) {
 		if (_settings_game.economy.found_town == TF_FORBIDDEN) return CMD_ERROR;
 		if (size == TSZ_LARGE) return CMD_ERROR;
 		if (random) return CMD_ERROR;
@@ -1760,7 +1760,7 @@ CommandCost CmdFoundTown(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 			t->UpdateVirtCoord();
 		}
 
-		if (_game_mode != GM_EDITOR) {
+		if (!GameState::GetInstance()->IsGameMode(GM_EDITOR)) {
 			/* 't' can't be NULL since 'random' is false outside scenedit */
 			assert(!random);
 			char company_name[MAX_LENGTH_COMPANY_NAME_CHARS * MAX_CHAR_LENGTH];
@@ -1895,7 +1895,7 @@ static TileIndex FindNearestGoodCoastalTownSpot(TileIndex tile, TownLayout layou
 
 static Town *CreateRandomTown(uint attempts, uint32 townnameparts, TownSize size, bool city, TownLayout layout)
 {
-	assert(_game_mode == GM_EDITOR || _generating_world); // These are the preconditions for CMD_DELETE_TOWN
+	assert(GameState::GetInstance()->IsGameMode(GM_EDITOR) || _generating_world); // These are the preconditions for CMD_DELETE_TOWN
 
 	if (!Town::CanAllocateItem()) return NULL;
 
@@ -1949,7 +1949,7 @@ static const byte _num_initial_towns[4] = {5, 11, 23, 46};  // very low, low, no
 bool GenerateTowns(TownLayout layout)
 {
 	uint current_number = 0;
-	uint difficulty = (_game_mode != GM_EDITOR) ? _settings_game.difficulty.number_towns : 0;
+	uint difficulty = (!GameState::GetInstance()->IsGameMode(GM_EDITOR)) ? _settings_game.difficulty.number_towns : 0;
 	uint total = (difficulty == (uint)CUSTOM_TOWN_NUMBER_DIFFICULTY) ? _settings_game.game_creation.custom_town_number : ScaleByMapSize(_num_initial_towns[difficulty] + (Random() & 7));
 	total = min(TownPool::MAX_SIZE, total);
 	uint32 townnameparts;
@@ -1981,7 +1981,7 @@ bool GenerateTowns(TownLayout layout)
 	}
 
 	/* If there are no towns at all and we are generating new game, bail out */
-	if (Town::GetNumItems() == 0 && _game_mode != GM_EDITOR) {
+	if (Town::GetNumItems() == 0 && !GameState::GetInstance()->IsGameMode(GM_EDITOR)) {
 		ShowErrorMessage(STR_ERROR_COULD_NOT_CREATE_TOWN, INVALID_STRING_ID, WL_CRITICAL);
 	}
 
@@ -2319,7 +2319,7 @@ static bool BuildTownHouse(Town *t, TileIndex tile)
 		const HouseSpec *hs = HouseSpec::Get(house);
 
 		if (_loaded_newgrf_features.has_newhouses && !_generating_world &&
-				_game_mode != GM_EDITOR && (hs->extra_flags & BUILDING_IS_HISTORICAL) != 0) {
+				!GameState::GetInstance()->IsGameMode(GM_EDITOR) && (hs->extra_flags & BUILDING_IS_HISTORICAL) != 0) {
 			continue;
 		}
 
@@ -2366,7 +2366,7 @@ static bool BuildTownHouse(Town *t, TileIndex tile)
 		byte construction_counter = 0;
 		byte construction_stage = 0;
 
-		if (_generating_world || _game_mode == GM_EDITOR) {
+		if (_generating_world || GameState::GetInstance()->IsGameMode(GM_EDITOR)) {
 			uint32 r = Random();
 
 			construction_stage = TOWN_HOUSE_COMPLETED;
@@ -2628,7 +2628,7 @@ CommandCost CmdTownGrowthRate(TileIndex tile, DoCommandFlag flags, uint32 p1, ui
  */
 CommandCost CmdExpandTown(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	if (_game_mode != GM_EDITOR && _current_company != OWNER_DEITY) return CMD_ERROR;
+	if (!GameState::GetInstance()->IsGameMode(GM_EDITOR) && _current_company != OWNER_DEITY) return CMD_ERROR;
 	Town *t = Town::GetIfValid(p1);
 	if (t == NULL) return CMD_ERROR;
 
@@ -2668,7 +2668,7 @@ CommandCost CmdExpandTown(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32
  */
 CommandCost CmdDeleteTown(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
 {
-	if (_game_mode != GM_EDITOR && !_generating_world) return CMD_ERROR;
+	if (!GameState::GetInstance()->IsGameMode(GM_EDITOR) && !_generating_world) return CMD_ERROR;
 	Town *t = Town::GetIfValid(p1);
 	if (t == NULL) return CMD_ERROR;
 

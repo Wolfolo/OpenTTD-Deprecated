@@ -318,7 +318,7 @@ static bool MakePNGImage(const char *name, ScreenshotCallback *callb, void *user
 	char *p = buf;
 	p += seprintf(p, lastof(buf), "Graphics set: %s (%u)\n", BaseGraphics::GetUsedSet()->name, BaseGraphics::GetUsedSet()->version);
 	p = strecpy(p, "NewGRFs:\n", lastof(buf));
-	for (const GRFConfig *c = _game_mode == GM_MENU ? NULL : _grfconfig; c != NULL; c = c->next) {
+	for (const GRFConfig *c = GameState::GetInstance()->IsGameMode(GM_MENU) ? NULL : _grfconfig; c != NULL; c = c->next) {
 		p += seprintf(p, lastof(buf), "%08X ", BSWAP32(c->ident.grfid));
 		p = md5sumToString(p, lastof(buf), c->ident.md5sum);
 		p += seprintf(p, lastof(buf), " %s\n", c->filename);
@@ -676,7 +676,9 @@ static const char *MakeScreenshotName(const char *default_fn, const char *ext, b
 	bool generate = StrEmpty(_screenshot_name);
 
 	if (generate) {
-		if (_game_mode == GM_EDITOR || _game_mode == GM_MENU || _local_company == COMPANY_SPECTATOR) {
+		GameState *gs = GameState::GetInstance();
+
+		if (gs->IsGameMode(GM_EDITOR) || gs->IsGameMode(GM_MENU) || _local_company == COMPANY_SPECTATOR) {
 			strecpy(_screenshot_name, default_fn, lastof(_screenshot_name));
 		} else {
 			GenerateDefaultSaveName(_screenshot_name, lastof(_screenshot_name));

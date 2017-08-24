@@ -200,7 +200,7 @@ void ClientNetworkGameSocketHandler::ClientError(NetworkRecvStatus res)
 		SendError(errorno);
 	}
 
-	_switch_mode = SM_MENU;
+	GameState::GetInstance()->SetSwitchMode(SM_MENU);
 	this->CloseConnection(res);
 	_networking = false;
 }

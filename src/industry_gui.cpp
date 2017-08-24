@@ -251,6 +251,7 @@ class BuildIndustryWindow : public Window {
 	IndustryType index[NUM_INDUSTRYTYPES + 1];  ///< Type of industry, in the order it was loaded
 	bool enabled[NUM_INDUSTRYTYPES + 1];        ///< availability state, coming from CBID_INDUSTRY_PROBABILITY (if ever)
 	Scrollbar *vscroll;
+	GameState *gs;
 
 	/** The offset for the text in the matrix. */
 	static const int MATRIX_TEXT_OFFSET = 17;
@@ -264,7 +265,7 @@ class BuildIndustryWindow : public Window {
 			this->enabled[i] = false;
 		}
 
-		if (_game_mode == GM_EDITOR) { // give room for the Many Random "button"
+		if (this->gs->IsGameMode(GM_EDITOR)) { // give room for the Many Random "button"
 			this->index[this->count] = INVALID_INDUSTRYTYPE;
 			this->enabled[this->count] = true;
 			this->count++;
@@ -281,13 +282,13 @@ class BuildIndustryWindow : public Window {
 				/* Rule is that editor mode loads all industries.
 				 * In game mode, all non raw industries are loaded too
 				 * and raw ones are loaded only when setting allows it */
-				if (_game_mode != GM_EDITOR && indsp->IsRawIndustry() && _settings_game.construction.raw_industry_construction == 0) {
+				if (!this->gs->IsGameMode(GM_EDITOR) && indsp->IsRawIndustry() && _settings_game.construction.raw_industry_construction == 0) {
 					/* Unselect if the industry is no longer in the list */
 					if (this->selected_type == ind) this->selected_index = -1;
 					continue;
 				}
 				this->index[this->count] = ind;
-				this->enabled[this->count] = (_game_mode == GM_EDITOR) || GetIndustryProbabilityCallback(ind, IACT_USERCREATION, 1) > 0;
+				this->enabled[this->count] = this->gs->IsGameMode(GM_EDITOR) || GetIndustryProbabilityCallback(ind, IACT_USERCREATION, 1) > 0;
 				/* Keep the selection to the correct line */
 				if (this->selected_type == ind) this->selected_index = this->count;
 				this->count++;
@@ -314,6 +315,7 @@ class BuildIndustryWindow : public Window {
 public:
 	BuildIndustryWindow() : Window(&_build_industry_desc)
 	{
+		this->gs = GameState::GetInstance();
 		this->timer_enabled = _loaded_newgrf_features.has_newindustries;
 
 		this->selected_index = -1;
@@ -351,7 +353,7 @@ public:
 
 			case WID_DPI_INFOPANEL: {
 				/* Extra line for cost outside of editor + extra lines for 'extra' information for NewGRFs. */
-				int height = 2 + (_game_mode == GM_EDITOR ? 0 : 1) + (_loaded_newgrf_features.has_newindustries ? 4 : 0);
+				int height = 2 + (this->gs->IsGameMode(GM_EDITOR) ? 0 : 1) + (_loaded_newgrf_features.has_newindustries ? 4 : 0);
 				Dimension d = {0, 0};
 				for (byte i = 0; i < this->count; i++) {
 					if (this->index[i] == INVALID_INDUSTRYTYPE) continue;
@@ -411,7 +413,7 @@ public:
 			case WID_DPI_FUND_WIDGET:
 				/* Raw industries might be prospected. Show this fact by changing the string
 				 * In Editor, you just build, while ingame, or you fund or you prospect */
-				if (_game_mode == GM_EDITOR) {
+				if (this->gs->IsGameMode(GM_EDITOR)) {
 					/* We've chosen many random industries but no industries have been specified */
 					SetDParam(0, STR_FUND_INDUSTRY_BUILD_NEW_INDUSTRY);
 				} else {
@@ -470,7 +472,7 @@ public:
 
 				const IndustrySpec *indsp = GetIndustrySpec(this->selected_type);
 
-				if (_game_mode != GM_EDITOR) {
+				if (!this->gs->IsGameMode(GM_EDITOR)) {
 					SetDParam(0, indsp->GetConstructionCost());
 					DrawString(left, right, y, STR_FUND_INDUSTRY_INDUSTRY_BUILD_COST);
 					y += FONT_HEIGHT_NORMAL;
@@ -542,7 +544,7 @@ public:
 					this->SetDirty();
 
 					if (_thd.GetCallbackWnd() == this &&
-							((_game_mode != GM_EDITOR && _settings_game.construction.raw_industry_construction == 2 && indsp != NULL && indsp->IsRawIndustry()) ||
+							((!this->gs->IsGameMode(GM_EDITOR) && _settings_game.construction.raw_industry_construction == 2 && indsp != NULL && indsp->IsRawIndustry()) ||
 							this->selected_type == INVALID_INDUSTRYTYPE ||
 							!this->enabled[this->selected_index])) {
 						/* Reset the button state if going to prospecting or "build many industries" */
@@ -572,7 +574,7 @@ public:
 						GenerateIndustries();
 						_generating_world = false;
 					}
-				} else if (_game_mode != GM_EDITOR && _settings_game.construction.raw_industry_construction == 2 && GetIndustrySpec(this->selected_type)->IsRawIndustry()) {
+				} else if (!this->gs->IsGameMode(GM_EDITOR) && _settings_game.construction.raw_industry_construction == 2 && GetIndustrySpec(this->selected_type)->IsRawIndustry()) {
 					DoCommandP(0, this->selected_type, InteractiveRandom(), CMD_BUILD_INDUSTRY | CMD_MSG(STR_ERROR_CAN_T_CONSTRUCT_THIS_INDUSTRY));
 					this->HandleButtonClick(WID_DPI_FUND_WIDGET);
 				} else {
@@ -596,7 +598,7 @@ public:
 		const IndustrySpec *indsp = GetIndustrySpec(this->selected_type);
 		uint32 seed = InteractiveRandom();
 
-		if (_game_mode == GM_EDITOR) {
+		if (this->gs->IsGameMode(GM_EDITOR)) {
 			/* Show error if no town exists at all */
 			if (Town::GetNumItems() == 0) {
 				SetDParam(0, indsp->name);
@@ -674,7 +676,7 @@ public:
 
 void ShowBuildIndustryWindow()
 {
-	if (_game_mode != GM_EDITOR && !Company::IsValidID(_local_company)) return;
+	if (!GameState::GetInstance()->IsGameMode(GM_EDITOR) && !Company::IsValidID(_local_company)) return;
 	if (BringWindowToFrontById(WC_BUILD_INDUSTRY, 0)) return;
 	new BuildIndustryWindow();
 }
@@ -684,7 +686,7 @@ static void UpdateIndustryProduction(Industry *i);
 static inline bool IsProductionAlterable(const Industry *i)
 {
 	const IndustrySpec *is = GetIndustrySpec(i->type);
-	return ((_game_mode == GM_EDITOR || _cheats.setup_prod.value) &&
+	return ((GameState::GetInstance()->IsGameMode(GM_EDITOR) || _cheats.setup_prod.value) &&
 			(is->production_rate[0] != 0 || is->production_rate[1] != 0 || is->IsRawIndustry()) &&
 			!_networking);
 }

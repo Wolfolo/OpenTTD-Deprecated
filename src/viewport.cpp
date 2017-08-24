@@ -1250,7 +1250,7 @@ void ViewportAddString(const DrawPixelInfo *dpi, ZoomLevel small_from, const Vie
 
 static void ViewportAddTownNames(DrawPixelInfo *dpi)
 {
-	if (!HasBit(_display_opt, DO_SHOW_TOWN_NAMES) || _game_mode == GM_MENU) return;
+	if (!HasBit(_display_opt, DO_SHOW_TOWN_NAMES) || GameState::GetInstance()->IsGameMode(GM_MENU)) return;
 
 	const Town *t;
 	FOR_ALL_TOWNS(t) {
@@ -1264,7 +1264,7 @@ static void ViewportAddTownNames(DrawPixelInfo *dpi)
 
 static void ViewportAddStationNames(DrawPixelInfo *dpi)
 {
-	if (!(HasBit(_display_opt, DO_SHOW_STATION_NAMES) || HasBit(_display_opt, DO_SHOW_WAYPOINT_NAMES)) || _game_mode == GM_MENU) return;
+	if (!(HasBit(_display_opt, DO_SHOW_STATION_NAMES) || HasBit(_display_opt, DO_SHOW_WAYPOINT_NAMES)) || GameState::GetInstance()->IsGameMode(GM_MENU)) return;
 
 	const BaseStation *st;
 	FOR_ALL_BASE_STATIONS(st) {
@@ -2125,7 +2125,7 @@ static bool CheckClickOnSign(const ViewPort *vp, int x, int y)
 	FOR_ALL_SIGNS(si) {
 		/* If competitor signs are hidden, don't check signs that aren't owned by local company */
 		if (!HasBit(_display_opt, DO_SHOW_COMPETITOR_SIGNS) && _local_company != si->owner && si->owner != OWNER_DEITY) continue;
-		if (si->owner == OWNER_DEITY && _game_mode != GM_EDITOR) continue;
+		if (si->owner == OWNER_DEITY && !GameState::GetInstance()->IsGameMode(GM_EDITOR)) continue;
 
 		if (CheckClickOnViewportSign(vp, x, y, &si->sign)) {
 			HandleClickOnSign(si);

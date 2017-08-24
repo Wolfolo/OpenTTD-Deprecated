@@ -131,7 +131,7 @@ struct SignList {
 	void FilterSignList()
 	{
 		this->signs.Filter(&SignNameFilter, this->string_filter);
-		if (_game_mode != GM_EDITOR) this->signs.Filter(&OwnerDeityFilter, this->string_filter);
+		if (!GameState::GetInstance()->IsGameMode(GM_EDITOR)) this->signs.Filter(&OwnerDeityFilter, this->string_filter);
 		if (!HasBit(_display_opt, DO_SHOW_COMPETITOR_SIGNS)) {
 			this->signs.Filter(&OwnerVisibilityFilter, this->string_filter);
 		}
@@ -346,7 +346,7 @@ struct SignListWindow : Window, SignList {
  */
 static EventState SignListGlobalHotkeys(int hotkey)
 {
-	if (_game_mode == GM_MENU) return ES_NOT_HANDLED;
+	if (GameState::GetInstance()->IsGameMode(GM_MENU)) return ES_NOT_HANDLED;
 	Window *w = ShowSignList();
 	if (w == NULL) return ES_NOT_HANDLED;
 	return w->OnHotkey(hotkey);
@@ -554,7 +554,7 @@ static WindowDesc _query_sign_edit_desc(
  */
 void HandleClickOnSign(const Sign *si)
 {
-	if (_ctrl_pressed && (si->owner == _local_company || (si->owner == OWNER_DEITY && _game_mode == GM_EDITOR))) {
+	if (_ctrl_pressed && (si->owner == _local_company || (si->owner == OWNER_DEITY && GameState::GetInstance()->IsGameMode(GM_EDITOR)))) {
 		RenameSign(si->index, NULL);
 		return;
 	}

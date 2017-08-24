@@ -20,7 +20,7 @@
 /* static */ GameConfig *GameConfig::GetConfig(ScriptSettingSource source)
 {
 	GameConfig **config;
-	if (source == SSS_FORCE_NEWGAME || (source == SSS_DEFAULT && _game_mode == GM_MENU)) {
+	if (source == SSS_FORCE_NEWGAME || (source == SSS_DEFAULT && GameState::GetInstance()->IsGameMode(GM_MENU))) {
 		config = &_settings_newgame.game_config;
 	} else {
 		config = &_settings_game.game_config;

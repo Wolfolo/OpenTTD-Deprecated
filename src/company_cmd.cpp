@@ -696,7 +696,9 @@ static void HandleBankruptcyTakeover(Company *c)
 /** Called every tick for updating some company info. */
 void OnTick_Companies()
 {
-	if (_game_mode == GM_EDITOR) return;
+	GameState *gs = GameState::GetInstance();
+
+	if (gs->IsGameMode(GM_EDITOR)) return;
 
 	Company *c = Company::GetIfValid(_cur_company_tick_index);
 	if (c != NULL) {
@@ -708,7 +710,7 @@ void OnTick_Companies()
 		_next_competitor_start = AI::GetStartNextTime() * DAY_TICKS;
 	}
 
-	if (AI::CanStartNew() && _game_mode != GM_MENU && --_next_competitor_start == 0) {
+	if (AI::CanStartNew() && !gs->IsGameMode(GM_MENU) && --_next_competitor_start == 0) {
 		MaybeStartNewCompany();
 	}
 

@@ -431,7 +431,7 @@ void GamelogMode()
 	LoggedChange *lc = GamelogChange(GLCT_MODE);
 	if (lc == NULL) return;
 
-	lc->mode.mode      = _game_mode;
+	lc->mode.mode      = GameState::GetInstance()->GetGameMode();
 	lc->mode.landscape = _settings_game.game_creation.landscape;
 }
 
@@ -507,7 +507,7 @@ void GamelogTestMode()
 		}
 	}
 
-	if (mode == NULL || mode->mode.mode != _game_mode || mode->mode.landscape != _settings_game.game_creation.landscape) GamelogMode();
+	if (mode == NULL || mode->mode.mode != GameState::GetInstance()->GetGameMode() || mode->mode.landscape != _settings_game.game_creation.landscape) GamelogMode();
 }
 
 

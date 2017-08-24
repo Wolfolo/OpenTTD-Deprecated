@@ -193,7 +193,7 @@ public:
 					SetDParam(2, this->bridges->Get(i)->cost);
 					SetDParam(1, b->speed);
 					SetDParam(0, b->material);
-					text_dim = maxdim(text_dim, GetStringBoundingBox(_game_mode == GM_EDITOR ? STR_SELECT_BRIDGE_SCENEDIT_INFO : STR_SELECT_BRIDGE_INFO));
+					text_dim = maxdim(text_dim, GetStringBoundingBox(GameState::GetInstance()->IsGameMode(GM_EDITOR) ? STR_SELECT_BRIDGE_SCENEDIT_INFO : STR_SELECT_BRIDGE_INFO));
 				}
 				sprite_dim.height++; // Sprite is rendered one pixel down in the matrix field.
 				text_dim.height++; // Allowing the bottom row pixels to be rendered on the edge of the matrix field.
@@ -235,7 +235,7 @@ public:
 
 					DrawSprite(b->sprite, b->pal, r.left + WD_MATRIX_LEFT, y + this->resize.step_height - 1 - GetSpriteSize(b->sprite).height);
 					DrawStringMultiLine(r.left + this->bridgetext_offset, r.right, y + 2, y + this->resize.step_height,
-							_game_mode == GM_EDITOR ? STR_SELECT_BRIDGE_SCENEDIT_INFO : STR_SELECT_BRIDGE_INFO);
+							GameState::GetInstance()->IsGameMode(GM_EDITOR) ? STR_SELECT_BRIDGE_SCENEDIT_INFO : STR_SELECT_BRIDGE_INFO);
 					y += this->resize.step_height;
 				}
 				break;

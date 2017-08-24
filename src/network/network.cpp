@@ -299,7 +299,7 @@ uint NetworkCalculateLag(const NetworkClientSocket *cs)
  *  error */
 void NetworkError(StringID error_string)
 {
-	_switch_mode = SM_MENU;
+	GameState::GetInstance()->SetSwitchMode(SM_MENU);
 	ShowErrorMessage(error_string, INVALID_STRING_ID, WL_CRITICAL);
 }
 

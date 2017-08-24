@@ -246,9 +246,10 @@ static void PlaceTreeAtSameHeight(TileIndex tile, int height)
 void PlaceTreesRandomly()
 {
 	int i, j, ht;
+	GameState *gs = GameState::GetInstance();
 
 	i = ScaleByMapSize(DEFAULT_TREE_STEPS);
-	if (_game_mode == GM_EDITOR) i /= EDITOR_TREE_DIV;
+	if (gs->IsGameMode(GM_EDITOR)) i /= EDITOR_TREE_DIV;
 	do {
 		uint32 r = Random();
 		TileIndex tile = RandomTileSeed(r);
@@ -276,7 +277,7 @@ void PlaceTreesRandomly()
 	/* place extra trees at rainforest area */
 	if (_settings_game.game_creation.landscape == LT_TROPIC) {
 		i = ScaleByMapSize(DEFAULT_RAINFOREST_TREE_STEPS);
-		if (_game_mode == GM_EDITOR) i /= EDITOR_TREE_DIV;
+		if (gs->IsGameMode(GM_EDITOR)) i /= EDITOR_TREE_DIV;
 
 		do {
 			uint32 r = Random();
@@ -342,7 +343,8 @@ CommandCost CmdPlantTree(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 	/* Check the tree type within the current climate */
 	if (tree_to_plant != TREE_INVALID && !IsInsideBS(tree_to_plant, _tree_base_by_landscape[_settings_game.game_creation.landscape], _tree_count_by_landscape[_settings_game.game_creation.landscape])) return CMD_ERROR;
 
-	Company *c = (_game_mode != GM_EDITOR) ? Company::GetIfValid(_current_company) : NULL;
+	GameState *gs = GameState::GetInstance();
+	Company *c = (!gs->IsGameMode(GM_EDITOR)) ? Company::GetIfValid(_current_company) : NULL;
 	int limit = (c == NULL ? INT32_MAX : GB(c->tree_limit, 16, 16));
 
 	TileArea ta(tile, p2);
@@ -350,7 +352,7 @@ CommandCost CmdPlantTree(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 		switch (GetTileType(tile)) {
 			case MP_TREES:
 				/* no more space for trees? */
-				if (_game_mode != GM_EDITOR && GetTreeCount(tile) == 4) {
+				if (!gs->IsGameMode(GM_EDITOR) && GetTreeCount(tile) == 4) {
 					msg = STR_ERROR_TREE_ALREADY_HERE;
 					continue;
 				}
@@ -389,7 +391,7 @@ CommandCost CmdPlantTree(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 						/* No cacti outside the desert */
 						(treetype == TREE_CACTUS && GetTropicZone(tile) != TROPICZONE_DESERT) ||
 						/* No rain forest trees outside the rain forest, except in the editor mode where it makes those tiles rain forest tile */
-						(IsInsideMM(treetype, TREE_RAINFOREST, TREE_CACTUS) && GetTropicZone(tile) != TROPICZONE_RAINFOREST && _game_mode != GM_EDITOR) ||
+						(IsInsideMM(treetype, TREE_RAINFOREST, TREE_CACTUS) && GetTropicZone(tile) != TROPICZONE_RAINFOREST && !gs->IsGameMode(GM_EDITOR)) ||
 						/* And no subtropical trees in the desert/rain forest */
 						(IsInsideMM(treetype, TREE_SUB_TROPICAL, TREE_TOYLAND) && GetTropicZone(tile) != TROPICZONE_NORMAL))) {
 					msg = STR_ERROR_TREE_WRONG_TERRAIN_FOR_TREE_TYPE;
@@ -417,7 +419,7 @@ CommandCost CmdPlantTree(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 					}
 				}
 
-				if (_game_mode != GM_EDITOR && Company::IsValidID(_current_company)) {
+				if (!gs->IsGameMode(GM_EDITOR) && Company::IsValidID(_current_company)) {
 					Town *t = ClosestTownFromTile(tile, _settings_game.economy.dist_local_authority);
 					if (t != NULL) ChangeTownRating(t, RATING_TREE_UP_STEP, RATING_TREE_MAXIMUM, flags);
 				}
@@ -429,12 +431,12 @@ CommandCost CmdPlantTree(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 
 					}
 
 					/* Plant full grown trees in scenario editor */
-					PlantTreesOnTile(tile, treetype, 0, _game_mode == GM_EDITOR ? 3 : 0);
+					PlantTreesOnTile(tile, treetype, 0, gs->IsGameMode(GM_EDITOR) ? 3 : 0);
 					MarkTileDirtyByTile(tile);
 					if (c != NULL) c->tree_limit -= 1 << 16;
 
 					/* When planting rainforest-trees, set tropiczone to rainforest in editor. */
-					if (_game_mode == GM_EDITOR && IsInsideMM(treetype, TREE_RAINFOREST, TREE_CACTUS)) {
+					if (gs->IsGameMode(GM_EDITOR) && IsInsideMM(treetype, TREE_RAINFOREST, TREE_CACTUS)) {
 						SetTropicZone(tile, TROPICZONE_RAINFOREST);
 					}
 				}

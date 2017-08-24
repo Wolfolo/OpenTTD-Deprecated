@@ -981,7 +981,7 @@ static LRESULT CALLBACK WndProcGdi(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 #if !defined(WINCE)
 		case WM_ACTIVATE: {
 			/* Don't do anything if we are closing openttd */
-			if (_exit_game) break;
+			if (GameState::GetInstance()->ExitGame()) break;
 
 			bool active = (LOWORD(wParam) != WA_INACTIVE);
 			bool minimized = (HIWORD(wParam) != 0);
@@ -1219,6 +1219,7 @@ void VideoDriver_Win32::MainLoop()
 
 	_wnd.running = true;
 
+	GameState *gs = GameState::GetInstance();
 	CheckPaletteAnim();
 	for (;;) {
 		uint32 prev_cur_ticks = cur_ticks; // to check for wrapping
@@ -1229,7 +1230,7 @@ void VideoDriver_Win32::MainLoop()
 			if (EditBoxInGlobalFocus()) TranslateMessage(&mesg);
 			DispatchMessage(&mesg);
 		}
-		if (_exit_game) return;
+		if (gs->ExitGame()) return;
 
 #if defined(_DEBUG)
 		if (_wnd.has_focus && GetAsyncKeyState(VK_SHIFT) < 0 &&
@@ -1237,7 +1238,7 @@ void VideoDriver_Win32::MainLoop()
 		/* Speed up using TAB, but disable for ALT+TAB of course */
 		if (_wnd.has_focus && GetAsyncKeyState(VK_TAB) < 0 && GetAsyncKeyState(VK_MENU) >= 0 &&
 #endif
-			  !_networking && _game_mode != GM_MENU) {
+			  !_networking && !gs->IsGameMode(GM_MENU)) {
 			_fast_forward |= 2;
 		} else if (_fast_forward & 2) {
 			_fast_forward = 0;

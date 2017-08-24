@@ -282,7 +282,7 @@ CommandCost CmdTerraformLand(TileIndex tile, DoCommandFlag flags, uint32 p1, uin
 
 			/* Check tiletype-specific things, and add extra-cost */
 			const bool curr_gen = _generating_world;
-			if (_game_mode == GM_EDITOR) _generating_world = true; // used to create green terraformed land
+			if (GameState::GetInstance()->IsGameMode(GM_EDITOR)) _generating_world = true; // used to create green terraformed land
 			DoCommandFlag tile_flags = flags | DC_AUTO | DC_FORCE_CLEAR_TILE;
 			if (pass == 0) {
 				tile_flags &= ~DC_EXEC;

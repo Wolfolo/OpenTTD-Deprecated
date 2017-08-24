@@ -46,7 +46,7 @@ NetworkRecvStatus NetworkGameSocketHandler::CloseConnection(bool error)
 {
 	/* Clients drop back to the main menu */
 	if (!_network_server && _networking) {
-		_switch_mode = SM_MENU;
+		GameState::GetInstance()->SetSwitchMode(SM_MENU);
 		_networking = false;
 		ShowErrorMessage(STR_NETWORK_ERROR_LOSTCONNECTION, INVALID_STRING_ID, WL_CRITICAL);
 
