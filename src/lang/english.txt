@@ -2278,6 +2278,11 @@ STR_TRANSPARENT_BRIDGES_TOOLTIP                                 :{BLACK}Toggle t
 STR_TRANSPARENT_STRUCTURES_TOOLTIP                              :{BLACK}Toggle transparency for structures like lighthouses and antennas. Ctrl+Click to lock
 STR_TRANSPARENT_CATENARY_TOOLTIP                                :{BLACK}Toggle transparency for catenary. Ctrl+Click to lock
 STR_TRANSPARENT_LOADING_TOOLTIP                                 :{BLACK}Toggle transparency for loading indicators. Ctrl+Click to lock
+STR_TRANSPARENT_TOWN_NAMES_TOOLTIP                              :{BLACK}Toggle display of town names
+STR_TRANSPARENT_STATION_NAMES_TOOLTIP                           :{BLACK}Toggle display of station names
+STR_TRANSPARENT_WAYPOINT_NAMES_TOOLTIP                          :{BLACK}Toggle display of waypoint names
+STR_TRANSPARENT_SHOW_COMPETITOR_SIGNS_TOOLTIP                   :{BLACK}Toggle display of competitor signs and names
+STR_TRANSPARENT_FULL_DETAIL_TOOLTIP                             :{BLACK}Toggle display of full detail
 STR_TRANSPARENT_INVISIBLE_TOOLTIP                               :{BLACK}Set objects invisible instead of transparent
 
 # Linkgraph legend window

@@ -14,6 +14,7 @@
 #include "transparency.h"
 #include "sound_func.h"
 #include "settings_type.h"
+#include "window_func.h"
 
 #include "widgets/transparency_widget.h"
 
@@ -59,7 +60,7 @@ public:
 			}
 			case WID_TT_BUTTONS:
 				for (uint i = WID_TT_BEGIN; i < WID_TT_END; i++) {
-					if (i == WID_TT_LOADING) continue; // Do not draw button for invisible loading indicators.
+					if (i >= WID_TT_LOADING) continue; // Do not draw button for invisible loading indicators and following ones.
 
 					const NWidgetBase *wi = this->GetWidget<NWidgetBase>(i);
 					DrawFrameRect(wi->pos_x + 1, r.top + 2, wi->pos_x + wi->current_x - 2, r.bottom - 2, COLOUR_PALE_GREEN,
@@ -71,7 +72,7 @@ public:
 
 	virtual void OnClick(Point pt, int widget, int click_count)
 	{
-		if (widget >= WID_TT_BEGIN && widget < WID_TT_END) {
+		if (widget >= WID_TT_BEGIN && widget < WID_TT_DISPLAY_OPTIONS_BEGIN) {
 			if (_ctrl_pressed) {
 				/* toggle the bit of the transparencies lock variable */
 				ToggleTransparencyLock((TransparencyOption)(widget - WID_TT_BEGIN));
@@ -82,6 +83,21 @@ public:
 				if (_settings_client.sound.click_beep) SndPlayFx(SND_15_BEEP);
 				MarkWholeScreenDirty();
 			}
+		} else if (widget > WID_TT_DISPLAY_OPTIONS_BEGIN && widget < WID_TT_END) {
+			switch (widget - WID_TT_BEGIN) {
+				case WID_TT_TOWNNAMES:     ToggleBit(_display_opt, DO_SHOW_TOWN_NAMES);     break;
+				case WID_TT_STATIONNAMES:  ToggleBit(_display_opt, DO_SHOW_STATION_NAMES);  break;
+				case WID_TT_WAYPOINTNAMES: ToggleBit(_display_opt, DO_SHOW_WAYPOINT_NAMES); break;
+				case WID_TT_FULL_DETAILS:  ToggleBit(_display_opt, DO_FULL_DETAIL);         break;
+				case WID_TT_COMPETITOR_SIGNS:
+					ToggleBit(_display_opt, DO_SHOW_COMPETITOR_SIGNS);
+					InvalidateWindowClassesData(WC_SIGN_LIST, -1);
+					break;
+			}
+
+			if (_settings_client.sound.click_beep) SndPlayFx(SND_15_BEEP);
+
+			MarkWholeScreenDirty();
 		} else if (widget == WID_TT_BUTTONS) {
 			uint i;
 			for (i = WID_TT_BEGIN; i < WID_TT_END; i++) {
@@ -119,9 +135,15 @@ public:
 	virtual void OnInvalidateData(int data = 0, bool gui_scope = true)
 	{
 		if (!gui_scope) return;
-		for (uint i = WID_TT_BEGIN; i < WID_TT_END; i++) {
+		for (uint i = WID_TT_BEGIN; i < WID_TT_DISPLAY_OPTIONS_BEGIN; i++) {
 			this->SetWidgetLoweredState(i, IsTransparencySet((TransparencyOption)(i - WID_TT_BEGIN)));
 		}
+
+		this->SetWidgetLoweredState(WID_TT_TOWNNAMES, HasBit(_display_opt, DO_SHOW_TOWN_NAMES));
+		this->SetWidgetLoweredState(WID_TT_STATIONNAMES, HasBit(_display_opt, DO_SHOW_STATION_NAMES));
+		this->SetWidgetLoweredState(WID_TT_WAYPOINTNAMES, HasBit(_display_opt, DO_SHOW_WAYPOINT_NAMES));
+		this->SetWidgetLoweredState(WID_TT_COMPETITOR_SIGNS, HasBit(_display_opt, DO_SHOW_COMPETITOR_SIGNS));
+		this->SetWidgetLoweredState(WID_TT_FULL_DETAILS, HasBit(_display_opt, DO_FULL_DETAIL));
 	}
 };
 
@@ -141,7 +163,12 @@ static const NWidgetPart _nested_transparency_widgets[] = {
 		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_TT_STRUCTURES), SetMinimalSize(22, 22), SetFill(0, 1), SetDataTip(SPR_IMG_TRANSMITTER, STR_TRANSPARENT_STRUCTURES_TOOLTIP),
 		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_TT_CATENARY), SetMinimalSize(22, 22), SetFill(0, 1), SetDataTip(SPR_BUILD_X_ELRAIL, STR_TRANSPARENT_CATENARY_TOOLTIP),
 		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_TT_LOADING), SetMinimalSize(22, 22), SetFill(0, 1), SetDataTip(SPR_IMG_TRAINLIST, STR_TRANSPARENT_LOADING_TOOLTIP),
-		NWidget(WWT_PANEL, COLOUR_DARK_GREEN), SetFill(1, 1), EndContainer(),
+		NWidget(WWT_PANEL, COLOUR_DARK_GREEN), SetMinimalSize(4, 22), SetFill(1, 1), EndContainer(),
+		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_TT_TOWNNAMES), SetMinimalSize(22, 22), SetFill(0, 1), SetDataTip(SPR_IMG_TOWN, STR_TRANSPARENT_TOWN_NAMES_TOOLTIP),
+		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_TT_STATIONNAMES), SetMinimalSize(22, 22), SetFill(0, 1), SetDataTip(SPR_IMG_RAIL_STATION, STR_TRANSPARENT_STATION_NAMES_TOOLTIP),
+		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_TT_WAYPOINTNAMES), SetMinimalSize(22, 22), SetFill(0, 1), SetDataTip(SPR_IMG_WAYPOINT, STR_TRANSPARENT_WAYPOINT_NAMES_TOOLTIP),
+		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_TT_COMPETITOR_SIGNS), SetMinimalSize(22, 22), SetFill(0, 1), SetDataTip(SPR_IMG_SIGN, STR_TRANSPARENT_SHOW_COMPETITOR_SIGNS_TOOLTIP),
+		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_TT_FULL_DETAILS), SetMinimalSize(22, 22), SetFill(0, 1), SetDataTip(SPR_IMG_FASTFORWARD, STR_TRANSPARENT_FULL_DETAIL_TOOLTIP),
 	EndContainer(),
 	/* Panel with 'invisibility' buttons. */
 	NWidget(WWT_PANEL, COLOUR_DARK_GREEN, WID_TT_BUTTONS), SetMinimalSize(219, 13), SetDataTip(0x0, STR_TRANSPARENT_INVISIBLE_TOOLTIP),
