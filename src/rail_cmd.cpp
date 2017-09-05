@@ -2400,7 +2400,7 @@ static void DrawTile_Track(TileInfo *ti)
 
 		DrawTrackBits(ti, rails);
 
-		if (HasBit(_display_opt, DO_FULL_DETAIL)) DrawTrackDetails(ti, rti);
+		if (!IsTransparencySet(TO_FULL_DETAIL)) DrawTrackDetails(ti, rti);
 
 		if (HasRailCatenaryDrawn(GetRailType(ti->tile))) DrawRailCatenary(ti);
 

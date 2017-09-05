@@ -24,9 +24,9 @@ enum TransparencyToolbarWidgets {
 	WID_TT_BRIDGES,                  ///< Bridges transparency toggle button.
 	WID_TT_STRUCTURES,               ///< Object structure transparency toggle button.
 	WID_TT_CATENARY,                 ///< Catenary transparency toggle button.
-	WID_TT_LOADING,                  ///< Loading indicators transparency toggle button.
 	WID_TT_DISPLAY_OPTIONS_BEGIN,    ///< Begin of the display options.
-	WID_TT_TOWNNAMES = WID_TT_DISPLAY_OPTIONS_BEGIN, ///< Display town names
+	WID_TT_LOADING = WID_TT_DISPLAY_OPTIONS_BEGIN, ///< Loading indicators transparency toggle button.
+	WID_TT_TOWNNAMES,                ///< Display town names
 	WID_TT_STATIONNAMES,             ///< Display station names
 	WID_TT_WAYPOINTNAMES,            ///< Display waypoints names
 	WID_TT_COMPETITOR_SIGNS,         ///< Display competitor signs and names

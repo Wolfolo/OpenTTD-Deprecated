@@ -122,7 +122,7 @@ struct SignList {
 	/** Filter sign list by owner */
 	static bool CDECL OwnerVisibilityFilter(const Sign * const *a, StringFilter &filter)
 	{
-		assert(!HasBit(_display_opt, DO_SHOW_COMPETITOR_SIGNS));
+		assert(IsTransparencySet(TO_COMPETITOR_SIGNS));
 		/* Hide sign if non-own signs are hidden in the viewport */
 		return (*a)->owner == _local_company || (*a)->owner == OWNER_DEITY;
 	}
@@ -132,7 +132,7 @@ struct SignList {
 	{
 		this->signs.Filter(&SignNameFilter, this->string_filter);
 		if (_game_mode != GM_EDITOR) this->signs.Filter(&OwnerDeityFilter, this->string_filter);
-		if (!HasBit(_display_opt, DO_SHOW_COMPETITOR_SIGNS)) {
+		if (IsTransparencySet(TO_COMPETITOR_SIGNS)) {
 			this->signs.Filter(&OwnerVisibilityFilter, this->string_filter);
 		}
 	}

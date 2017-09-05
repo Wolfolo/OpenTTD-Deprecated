@@ -31,6 +31,11 @@ enum TransparencyOption {
 	TO_STRUCTURES, ///< other objects such as transmitters and lighthouses
 	TO_CATENARY,   ///< catenary
 	TO_LOADING,    ///< loading indicators
+	TO_TOWN_NAMES,       ///< names of cities
+	TO_STATION_NAMES,    ///< names of stations
+	TO_WAYPOINT_NAMES,   ///< names of waypoints
+	TO_COMPETITOR_SIGNS, ///< competitor signs and names
+	TO_FULL_DETAIL,      ///< street side lights and trees, railway fences
 	TO_END,
 	TO_INVALID,    ///< Invalid transparency option
 };
@@ -39,7 +44,6 @@ typedef uint TransparencyOptionBits; ///< transparency option bits
 extern TransparencyOptionBits _transparency_opt;
 extern TransparencyOptionBits _transparency_lock;
 extern TransparencyOptionBits _invisibility_opt;
-extern byte _display_opt;
 
 /**
  * Check if the transparency option bit is set

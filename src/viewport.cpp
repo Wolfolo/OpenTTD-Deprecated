@@ -1250,7 +1250,7 @@ void ViewportAddString(const DrawPixelInfo *dpi, ZoomLevel small_from, const Vie
 
 static void ViewportAddTownNames(DrawPixelInfo *dpi)
 {
-	if (!HasBit(_display_opt, DO_SHOW_TOWN_NAMES) || _game_mode == GM_MENU) return;
+	if (IsTransparencySet(TO_TOWN_NAMES) || _game_mode == GM_MENU) return;
 
 	const Town *t;
 	FOR_ALL_TOWNS(t) {
@@ -1264,7 +1264,7 @@ static void ViewportAddTownNames(DrawPixelInfo *dpi)
 
 static void ViewportAddStationNames(DrawPixelInfo *dpi)
 {
-	if (!(HasBit(_display_opt, DO_SHOW_STATION_NAMES) || HasBit(_display_opt, DO_SHOW_WAYPOINT_NAMES)) || _game_mode == GM_MENU) return;
+	if ((IsTransparencySet(TO_STATION_NAMES) || IsTransparencySet(TO_WAYPOINT_NAMES)) || _game_mode == GM_MENU) return;
 
 	const BaseStation *st;
 	FOR_ALL_BASE_STATIONS(st) {
@@ -1272,10 +1272,10 @@ static void ViewportAddStationNames(DrawPixelInfo *dpi)
 		bool is_station = Station::IsExpected(st);
 
 		/* Don't draw if the display options are disabled */
-		if (!HasBit(_display_opt, is_station ? DO_SHOW_STATION_NAMES : DO_SHOW_WAYPOINT_NAMES)) continue;
+		if (IsTransparencySet(is_station ? TO_STATION_NAMES : TO_WAYPOINT_NAMES)) continue;
 
 		/* Don't draw if station is owned by another company and competitor station names are hidden. Stations owned by none are never ignored. */
-		if (!HasBit(_display_opt, DO_SHOW_COMPETITOR_SIGNS) && _local_company != st->owner && st->owner != OWNER_NONE) continue;
+		if (IsTransparencySet(TO_COMPETITOR_SIGNS) && _local_company != st->owner && st->owner != OWNER_NONE) continue;
 
 		ViewportAddString(dpi, ZOOM_LVL_OUT_16X, &st->sign,
 				is_station ? STR_VIEWPORT_STATION : STR_VIEWPORT_WAYPOINT,
@@ -1288,14 +1288,14 @@ static void ViewportAddStationNames(DrawPixelInfo *dpi)
 static void ViewportAddSigns(DrawPixelInfo *dpi)
 {
 	/* Signs are turned off or are invisible */
-	if (!HasBit(_display_opt, DO_SHOW_SIGNS) || IsInvisibilitySet(TO_SIGNS)) return;
+	if (IsInvisibilitySet(TO_SIGNS)) return;
 
 	const Sign *si;
 	FOR_ALL_SIGNS(si) {
 		/* Don't draw if sign is owned by another company and competitor signs should be hidden.
 		 * Note: It is intentional that also signs owned by OWNER_NONE are hidden. Bankrupt
 		 * companies can leave OWNER_NONE signs after them. */
-		if (!HasBit(_display_opt, DO_SHOW_COMPETITOR_SIGNS) && _local_company != si->owner && si->owner != OWNER_DEITY) continue;
+		if (IsTransparencySet(TO_COMPETITOR_SIGNS) && _local_company != si->owner && si->owner != OWNER_DEITY) continue;
 
 		ViewportAddString(dpi, ZOOM_LVL_OUT_16X, &si->sign,
 				STR_WHITE_SIGN,
@@ -2074,7 +2074,7 @@ static bool CheckClickOnViewportSign(const ViewPort *vp, int x, int y, const Vie
 
 static bool CheckClickOnTown(const ViewPort *vp, int x, int y)
 {
-	if (!HasBit(_display_opt, DO_SHOW_TOWN_NAMES)) return false;
+	if (IsTransparencySet(TO_TOWN_NAMES)) return false;
 
 	const Town *t;
 	FOR_ALL_TOWNS(t) {
@@ -2089,7 +2089,7 @@ static bool CheckClickOnTown(const ViewPort *vp, int x, int y)
 
 static bool CheckClickOnStation(const ViewPort *vp, int x, int y)
 {
-	if (!(HasBit(_display_opt, DO_SHOW_STATION_NAMES) || HasBit(_display_opt, DO_SHOW_WAYPOINT_NAMES)) || IsInvisibilitySet(TO_SIGNS)) return false;
+	if ((IsTransparencySet(TO_STATION_NAMES) || IsTransparencySet(TO_WAYPOINT_NAMES)) || IsInvisibilitySet(TO_SIGNS)) return false;
 
 	const BaseStation *st;
 	FOR_ALL_BASE_STATIONS(st) {
@@ -2097,10 +2097,10 @@ static bool CheckClickOnStation(const ViewPort *vp, int x, int y)
 		bool is_station = Station::IsExpected(st);
 
 		/* Don't check if the display options are disabled */
-		if (!HasBit(_display_opt, is_station ? DO_SHOW_STATION_NAMES : DO_SHOW_WAYPOINT_NAMES)) continue;
+		if (IsTransparencySet(is_station ? TO_STATION_NAMES : TO_WAYPOINT_NAMES)) continue;
 
 		/* Don't check if competitor signs are not shown and the sign isn't owned by the local company */
-		if (!HasBit(_display_opt, DO_SHOW_COMPETITOR_SIGNS) && _local_company != st->owner && st->owner != OWNER_NONE) continue;
+		if (IsTransparencySet(TO_COMPETITOR_SIGNS) && _local_company != st->owner && st->owner != OWNER_NONE) continue;
 
 		if (CheckClickOnViewportSign(vp, x, y, &st->sign)) {
 			if (is_station) {
@@ -2119,12 +2119,12 @@ static bool CheckClickOnStation(const ViewPort *vp, int x, int y)
 static bool CheckClickOnSign(const ViewPort *vp, int x, int y)
 {
 	/* Signs are turned off, or they are transparent and invisibility is ON, or company is a spectator */
-	if (!HasBit(_display_opt, DO_SHOW_SIGNS) || IsInvisibilitySet(TO_SIGNS) || _local_company == COMPANY_SPECTATOR) return false;
+	if (IsInvisibilitySet(TO_SIGNS) || _local_company == COMPANY_SPECTATOR) return false;
 
 	const Sign *si;
 	FOR_ALL_SIGNS(si) {
 		/* If competitor signs are hidden, don't check signs that aren't owned by local company */
-		if (!HasBit(_display_opt, DO_SHOW_COMPETITOR_SIGNS) && _local_company != si->owner && si->owner != OWNER_DEITY) continue;
+		if (IsTransparencySet(TO_COMPETITOR_SIGNS) && _local_company != si->owner && si->owner != OWNER_DEITY) continue;
 		if (si->owner == OWNER_DEITY && _game_mode != GM_EDITOR) continue;
 
 		if (CheckClickOnViewportSign(vp, x, y, &si->sign)) {

@@ -9182,14 +9182,14 @@ void LoadNewGRF(uint load_index, uint file_index, uint num_baseset)
 	Year year            = _cur_year;
 	DateFract date_fract = _date_fract;
 	uint16 tick_counter  = _tick_counter;
-	byte display_opt     = _display_opt;
+	bool full_animation  = _full_animation;
 
 	if (_networking) {
 		_cur_year     = _settings_game.game_creation.starting_year;
 		_date         = ConvertYMDToDate(_cur_year, 0, 1);
 		_date_fract   = 0;
 		_tick_counter = 0;
-		_display_opt  = 0;
+		_full_animation = false;
 	}
 
 	InitializeGRFSpecial();
@@ -9279,9 +9279,9 @@ void LoadNewGRF(uint load_index, uint file_index, uint num_baseset)
 	AfterLoadGRFs();
 
 	/* Now revert back to the original situation */
-	_cur_year     = year;
-	_date         = date;
-	_date_fract   = date_fract;
-	_tick_counter = tick_counter;
-	_display_opt  = display_opt;
+	_cur_year       = year;
+	_date           = date;
+	_date_fract     = date_fract;
+	_tick_counter   = tick_counter;
+	_full_animation = full_animation;
 }

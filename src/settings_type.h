@@ -578,6 +578,9 @@ extern GameSettings _settings_newgame;
 /** Old vehicle settings, which were game settings before, and are company settings now. (Needed for savegame conversion) */
 extern VehicleDefaultSettings _old_vds;
 
+/** Full animation display option split an moved to its own variable */
+extern bool _full_animation;
+
 /**
  * Get the settings-object applicable for the current situation: the newgame settings
  * when we're in the main menu and otherwise the settings of the current game.

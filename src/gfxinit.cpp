@@ -287,7 +287,7 @@ static bool SwitchNewGRFBlitter()
 		{ "32bpp-anim",      1,  8, 32,  8, 32 },
 	};
 
-	const bool animation_wanted = HasBit(_display_opt, DO_FULL_ANIMATION);
+	const bool animation_wanted = _full_animation;
 	const char *cur_blitter = BlitterFactory::GetCurrentBlitter()->GetName();
 
 	VideoDriver::GetInstance()->AcquireBlitterLock();

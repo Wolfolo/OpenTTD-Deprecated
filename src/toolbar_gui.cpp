@@ -60,6 +60,8 @@
 /** Width of the toolbar, shared by statusbar. */
 uint _toolbar_width = 0;
 
+bool _full_animation;
+
 RailType _last_built_railtype;
 RoadType _last_built_roadtype;
 
@@ -314,7 +316,7 @@ static CallBackFunction ToolbarOptionsClick(Window *w)
 	*list->Append() = new DropDownListStringItem(STR_SETTINGS_MENU_NEWGRF_SETTINGS,          OME_NEWGRFSETTINGS, false);
 	*list->Append() = new DropDownListStringItem(STR_SETTINGS_MENU_TRANSPARENCY_OPTIONS,     OME_TRANSPARENCIES, false);
 	*list->Append() = new DropDownListItem(-1, false);
-	*list->Append() = new DropDownListCheckedItem(STR_SETTINGS_MENU_FULL_ANIMATION,          OME_FULL_ANIMATION, false, HasBit(_display_opt, DO_FULL_ANIMATION));
+	*list->Append() = new DropDownListCheckedItem(STR_SETTINGS_MENU_FULL_ANIMATION,          OME_FULL_ANIMATION, false, _full_animation);
 
 	ShowDropDownList(w, list, 0, WID_TN_SETTINGS, 140, true, true);
 	if (_settings_client.sound.click_beep) SndPlayFx(SND_15_BEEP);
@@ -336,7 +338,7 @@ static CallBackFunction MenuClickSettings(int index)
 		case OME_NEWGRFSETTINGS:       ShowNewGRFSettings(!_networking && _settings_client.gui.UserIsAllowedToChangeNewGRFs(), true, true, &_grfconfig); return CBF_NONE;
 		case OME_TRANSPARENCIES:       ShowTransparencyToolbar();                       break;
 
-		case OME_FULL_ANIMATION:       ToggleBit(_display_opt, DO_FULL_ANIMATION); CheckBlitter(); break;
+		case OME_FULL_ANIMATION:       _full_animation = !_full_animation; CheckBlitter(); break;
 	}
 	MarkWholeScreenDirty();
 	return CBF_NONE;

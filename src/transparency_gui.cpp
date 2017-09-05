@@ -26,7 +26,6 @@
 TransparencyOptionBits _transparency_opt;  ///< The bits that should be transparent.
 TransparencyOptionBits _transparency_lock; ///< Prevent these bits from flipping with X.
 TransparencyOptionBits _invisibility_opt;  ///< The bits that should be invisible.
-byte _display_opt; ///< What do we want to draw/do?
 
 class TransparenciesWindow : public Window
 {
@@ -53,7 +52,12 @@ public:
 			case WID_TT_BRIDGES:
 			case WID_TT_STRUCTURES:
 			case WID_TT_CATENARY:
-			case WID_TT_LOADING: {
+			case WID_TT_LOADING:
+			case WID_TT_TOWNNAMES:
+			case WID_TT_STATIONNAMES:
+			case WID_TT_WAYPOINTNAMES:
+			case WID_TT_COMPETITOR_SIGNS:
+			case WID_TT_FULL_DETAILS: {
 				uint i = widget - WID_TT_BEGIN;
 				if (HasBit(_transparency_lock, i)) DrawSprite(SPR_LOCK, PAL_NONE, r.left + 1, r.top + 1);
 				break;
@@ -72,7 +76,7 @@ public:
 
 	virtual void OnClick(Point pt, int widget, int click_count)
 	{
-		if (widget >= WID_TT_BEGIN && widget < WID_TT_DISPLAY_OPTIONS_BEGIN) {
+		if (widget >= WID_TT_BEGIN && widget < WID_TT_END) {
 			if (_ctrl_pressed) {
 				/* toggle the bit of the transparencies lock variable */
 				ToggleTransparencyLock((TransparencyOption)(widget - WID_TT_BEGIN));
@@ -80,24 +84,13 @@ public:
 			} else {
 				/* toggle the bit of the transparencies variable and play a sound */
 				ToggleTransparency((TransparencyOption)(widget - WID_TT_BEGIN));
+				if (widget == WID_TT_COMPETITOR_SIGNS) {
+					InvalidateWindowClassesData(WC_SIGN_LIST, -1);
+				}
+
 				if (_settings_client.sound.click_beep) SndPlayFx(SND_15_BEEP);
 				MarkWholeScreenDirty();
 			}
-		} else if (widget >= WID_TT_DISPLAY_OPTIONS_BEGIN && widget < WID_TT_END) {
-			switch (widget - WID_TT_BEGIN) {
-				case WID_TT_TOWNNAMES:     ToggleBit(_display_opt, DO_SHOW_TOWN_NAMES);     break;
-				case WID_TT_STATIONNAMES:  ToggleBit(_display_opt, DO_SHOW_STATION_NAMES);  break;
-				case WID_TT_WAYPOINTNAMES: ToggleBit(_display_opt, DO_SHOW_WAYPOINT_NAMES); break;
-				case WID_TT_FULL_DETAILS:  ToggleBit(_display_opt, DO_FULL_DETAIL);         break;
-				case WID_TT_COMPETITOR_SIGNS:
-					ToggleBit(_display_opt, DO_SHOW_COMPETITOR_SIGNS);
-					InvalidateWindowClassesData(WC_SIGN_LIST, -1);
-					break;
-			}
-
-			if (_settings_client.sound.click_beep) SndPlayFx(SND_15_BEEP);
-
-			MarkWholeScreenDirty();
 		} else if (widget == WID_TT_BUTTONS) {
 			uint i;
 			for (i = WID_TT_BEGIN; i < WID_TT_END; i++) {
@@ -135,15 +128,9 @@ public:
 	virtual void OnInvalidateData(int data = 0, bool gui_scope = true)
 	{
 		if (!gui_scope) return;
-		for (uint i = WID_TT_BEGIN; i < WID_TT_DISPLAY_OPTIONS_BEGIN; i++) {
+		for (uint i = WID_TT_BEGIN; i < WID_TT_END; i++) {
 			this->SetWidgetLoweredState(i, IsTransparencySet((TransparencyOption)(i - WID_TT_BEGIN)));
 		}
-
-		this->SetWidgetLoweredState(WID_TT_TOWNNAMES, HasBit(_display_opt, DO_SHOW_TOWN_NAMES));
-		this->SetWidgetLoweredState(WID_TT_STATIONNAMES, HasBit(_display_opt, DO_SHOW_STATION_NAMES));
-		this->SetWidgetLoweredState(WID_TT_WAYPOINTNAMES, HasBit(_display_opt, DO_SHOW_WAYPOINT_NAMES));
-		this->SetWidgetLoweredState(WID_TT_COMPETITOR_SIGNS, HasBit(_display_opt, DO_SHOW_COMPETITOR_SIGNS));
-		this->SetWidgetLoweredState(WID_TT_FULL_DETAILS, HasBit(_display_opt, DO_FULL_DETAIL));
 	}
 };
 
@@ -162,8 +149,8 @@ static const NWidgetPart _nested_transparency_widgets[] = {
 		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_TT_BRIDGES), SetMinimalSize(43, 22), SetFill(0, 1), SetDataTip(SPR_IMG_BRIDGE, STR_TRANSPARENT_BRIDGES_TOOLTIP),
 		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_TT_STRUCTURES), SetMinimalSize(22, 22), SetFill(0, 1), SetDataTip(SPR_IMG_TRANSMITTER, STR_TRANSPARENT_STRUCTURES_TOOLTIP),
 		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_TT_CATENARY), SetMinimalSize(22, 22), SetFill(0, 1), SetDataTip(SPR_BUILD_X_ELRAIL, STR_TRANSPARENT_CATENARY_TOOLTIP),
-		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_TT_LOADING), SetMinimalSize(22, 22), SetFill(0, 1), SetDataTip(SPR_IMG_TRAINLIST, STR_TRANSPARENT_LOADING_TOOLTIP),
 		NWidget(WWT_PANEL, COLOUR_DARK_GREEN), SetMinimalSize(4, 22), SetFill(1, 1), EndContainer(),
+		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_TT_LOADING), SetMinimalSize(22, 22), SetFill(0, 1), SetDataTip(SPR_IMG_TRAINLIST, STR_TRANSPARENT_LOADING_TOOLTIP),
 		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_TT_TOWNNAMES), SetMinimalSize(22, 22), SetFill(0, 1), SetDataTip(SPR_IMG_TOWN, STR_TRANSPARENT_TOWN_NAMES_TOOLTIP),
 		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_TT_STATIONNAMES), SetMinimalSize(22, 22), SetFill(0, 1), SetDataTip(SPR_IMG_RAIL_STATION, STR_TRANSPARENT_STATION_NAMES_TOOLTIP),
 		NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_TT_WAYPOINTNAMES), SetMinimalSize(22, 22), SetFill(0, 1), SetDataTip(SPR_IMG_WAYPOINT, STR_TRANSPARENT_WAYPOINT_NAMES_TOOLTIP),

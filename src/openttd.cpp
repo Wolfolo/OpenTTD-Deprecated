@@ -1490,7 +1490,7 @@ void GameLoop()
 	StateGameLoop();
 #endif /* ENABLE_NETWORK */
 
-	if (!_pause_mode && HasBit(_display_opt, DO_FULL_ANIMATION)) DoPaletteAnimations();
+	if (!_pause_mode && _full_animation) DoPaletteAnimations();
 
 	if (!_pause_mode || _game_mode == GM_EDITOR || _settings_game.construction.command_pause_level > CMDPL_NO_CONSTRUCTION) MoveAllTextEffects();
 
