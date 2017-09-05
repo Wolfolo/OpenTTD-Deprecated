@@ -83,7 +83,7 @@ public:
 				if (_settings_client.sound.click_beep) SndPlayFx(SND_15_BEEP);
 				MarkWholeScreenDirty();
 			}
-		} else if (widget > WID_TT_DISPLAY_OPTIONS_BEGIN && widget < WID_TT_END) {
+		} else if (widget >= WID_TT_DISPLAY_OPTIONS_BEGIN && widget < WID_TT_END) {
 			switch (widget - WID_TT_BEGIN) {
 				case WID_TT_TOWNNAMES:     ToggleBit(_display_opt, DO_SHOW_TOWN_NAMES);     break;
 				case WID_TT_STATIONNAMES:  ToggleBit(_display_opt, DO_SHOW_STATION_NAMES);  break;
